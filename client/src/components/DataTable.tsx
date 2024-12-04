@@ -23,9 +23,8 @@ export function DataTable({ data }: DataTableProps) {
     return item.Data
       .filter(d => !d.Secreto) // Filter out secret records
       .map(d => {
-        const period = typeof d.Periodo === 'object' ? d.Periodo : { Anyo: 0, Nombre_largo: '', NombrePeriodo: '' };
-        const year = period.Anyo;
-        const quarterMatch = period.Nombre_largo?.match(/Trimestre (\d)/);
+        const year = d.Periodo.Anyo;
+        const quarterMatch = d.Periodo.Nombre_largo.match(/Trimestre (\d)/);
         const quarter = quarterMatch ? parseInt(quarterMatch[1]) : 0;
         
         return {
