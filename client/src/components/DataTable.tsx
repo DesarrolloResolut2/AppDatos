@@ -22,8 +22,11 @@ export function DataTable({ data }: DataTableProps) {
             <TableHead>Indicador</TableHead>
             <TableHead>Género</TableHead>
             <TableHead>Región</TableHead>
-            <TableHead className="text-right">Valor</TableHead>
-            <TableHead className="text-right">Periodo</TableHead>
+            {["T4 2023", "T3 2023", "T2 2023", "T1 2023"].map((periodo) => (
+              <TableHead key={periodo} className="text-right">
+                {periodo}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -34,22 +37,33 @@ export function DataTable({ data }: DataTableProps) {
             const gender = nameParts[1]?.includes("Hombres") ? "Hombres" : "Mujeres";
             const region = nameParts[2]?.trim() || "";
 
-            // Get the latest data point and ensure we have primitive values
-            const latestData = Array.isArray(item.Data) && item.Data.length > 0 ? item.Data[0] : null;
-            const value = latestData && typeof latestData.Valor === 'number' ? latestData.Valor.toFixed(2) : 'N/A';
-            const periodo = latestData && typeof latestData.Periodo === 'string' ? latestData.Periodo : 'N/A';
-            
+            // Sort data points by period
+            const sortedData = [...item.Data].sort((a, b) => {
+              const periodA = a.Periodo.replace('T', '').split(' ');
+              const periodB = b.Periodo.replace('T', '').split(' ');
+              const yearDiff = parseInt(periodB[1]) - parseInt(periodA[1]);
+              if (yearDiff !== 0) return yearDiff;
+              return parseInt(periodB[0]) - parseInt(periodA[0]);
+            });
+
+            // Create a map of periods to values
+            const periodValues = new Map(
+              sortedData.map(d => [d.Periodo, d.Valor])
+            );
+
             return (
               <TableRow key={`${indicator}-${gender}-${region}`}>
                 <TableCell className="font-medium">{String(indicator)}</TableCell>
                 <TableCell>{String(gender)}</TableCell>
                 <TableCell>{String(region)}</TableCell>
-                <TableCell className="text-right">
-                  {value === 'N/A' ? value : `${value}%`}
-                </TableCell>
-                <TableCell className="text-right">
-                  {String(periodo)}
-                </TableCell>
+                {["T4 2023", "T3 2023", "T2 2023", "T1 2023"].map((periodo) => {
+                  const value = periodValues.get(periodo);
+                  return (
+                    <TableCell key={periodo} className="text-right">
+                      {value !== undefined ? `${value.toFixed(2)}%` : 'N/A'}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             );
           })}
