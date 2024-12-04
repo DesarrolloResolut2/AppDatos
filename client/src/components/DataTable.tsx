@@ -28,25 +28,27 @@ export function DataTable({ data }: DataTableProps) {
         </TableHeader>
         <TableBody>
           {data.map((item) => {
-            // Extract parts from the name string
-            const nameParts = item.Nombre.split(".");
+            // Extract parts from the name string safely
+            const nameParts = (item.Nombre || "").split(".");
             const indicator = nameParts[0]?.trim() || "";
             const gender = nameParts[1]?.includes("Hombres") ? "Hombres" : "Mujeres";
             const region = nameParts[2]?.trim() || "";
 
-            // Get the latest data point
-            const latestData = item.Data[0];
+            // Get the latest data point and ensure we have primitive values
+            const latestData = Array.isArray(item.Data) && item.Data.length > 0 ? item.Data[0] : null;
+            const value = latestData && typeof latestData.Valor === 'number' ? latestData.Valor.toFixed(2) : 'N/A';
+            const periodo = latestData && typeof latestData.Periodo === 'string' ? latestData.Periodo : 'N/A';
             
             return (
-              <TableRow key={item.Nombre}>
-                <TableCell className="font-medium">{indicator}</TableCell>
-                <TableCell>{gender}</TableCell>
-                <TableCell>{region}</TableCell>
+              <TableRow key={`${indicator}-${gender}-${region}`}>
+                <TableCell className="font-medium">{String(indicator)}</TableCell>
+                <TableCell>{String(gender)}</TableCell>
+                <TableCell>{String(region)}</TableCell>
                 <TableCell className="text-right">
-                  {latestData?.Valor !== undefined ? `${latestData.Valor.toFixed(2)}%` : 'N/A'}
+                  {value === 'N/A' ? value : `${value}%`}
                 </TableCell>
                 <TableCell className="text-right">
-                  {latestData?.Periodo || 'N/A'}
+                  {String(periodo)}
                 </TableCell>
               </TableRow>
             );
