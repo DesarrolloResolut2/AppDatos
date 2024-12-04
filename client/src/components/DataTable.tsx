@@ -14,55 +14,64 @@ interface DataTableProps {
 }
 
 export function DataTable({ data }: DataTableProps) {
+  const allProcessedData = data.flatMap((item) => {
+    // Extract province from item.Nombre
+    const parts = item.Nombre.split(". ");
+    const provincia = parts.length > 2 ? parts[2] : "Desconocida";
+
+    // Process and map data points
+    return item.Data
+      .filter(d => !d.Secreto) // Filter out secret records
+      .map(d => {
+        const period = typeof d.Periodo === 'object' ? d.Periodo : { Anyo: 0, Nombre_largo: '', NombrePeriodo: '' };
+        const year = period.Anyo;
+        const quarterMatch = period.Nombre_largo?.match(/Trimestre (\d)/);
+        const quarter = quarterMatch ? parseInt(quarterMatch[1]) : 0;
+        
+        return {
+          provincia,
+          year,
+          quarter,
+          periodName: period.Nombre_largo || '',
+          shortPeriod: period.NombrePeriodo || '',
+          value: d.Valor
+        };
+      });
+  }).sort((a, b) => {
+    // Sort by province, year (descending), and quarter
+    const provinciaCompare = a.provincia.localeCompare(b.provincia);
+    if (provinciaCompare !== 0) return provinciaCompare;
+    
+    const yearDiff = b.year - a.year;
+    if (yearDiff !== 0) return yearDiff;
+    
+    return a.quarter - b.quarter;
+  });
+
   return (
     <Card className="overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Provincia</TableHead>
             <TableHead>Año</TableHead>
             <TableHead>Periodo</TableHead>
             <TableHead>Nombre Periodo</TableHead>
-            <TableHead className="text-right">Tasa de Actividad</TableHead>
+            <TableHead className="text-right">Tasa</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((item) => {
-            // Process and sort data points
-            const processedData = item.Data
-              .filter(d => !d.Secreto) // Filter out secret records
-              .map(d => {
-                const period = typeof d.Periodo === 'object' ? d.Periodo : { Anyo: 0, Nombre_largo: '', NombrePeriodo: '' };
-                const year = period.Anyo;
-                const quarterMatch = period.Nombre_largo?.match(/Trimestre (\d)/);
-                const quarter = quarterMatch ? parseInt(quarterMatch[1]) : 0;
-                
-                return {
-                  year,
-                  quarter,
-                  periodName: period.Nombre_largo || '',
-                  shortPeriod: period.NombrePeriodo || '',
-                  value: d.Valor
-                };
-              })
-              .sort((a, b) => {
-                // Sort by year (descending) and quarter (ascending)
-                const yearDiff = b.year - a.year;
-                if (yearDiff !== 0) return yearDiff;
-                return a.quarter - b.quarter;
-              });
-
-            // Create table rows for each processed data point
-            return processedData.map((d, idx) => (
-              <TableRow key={`${item.Nombre}-${idx}`}>
-                <TableCell>{d.year}</TableCell>
-                <TableCell>{d.periodName}</TableCell>
-                <TableCell>{d.shortPeriod}</TableCell>
-                <TableCell className="text-right">
-                  {d.value.toFixed(2)}%
-                </TableCell>
-              </TableRow>
-            ));
-          })}
+          {allProcessedData.map((d, idx) => (
+            <TableRow key={`${d.provincia}-${d.year}-${d.quarter}-${idx}`}>
+              <TableCell>{d.provincia}</TableCell>
+              <TableCell>{d.year}</TableCell>
+              <TableCell>{d.periodName}</TableCell>
+              <TableCell>{d.shortPeriod}</TableCell>
+              <TableCell className="text-right">
+                {d.value.toFixed(2)}%
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </Card>
