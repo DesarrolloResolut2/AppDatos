@@ -38,17 +38,27 @@ export function DataTable({ data }: DataTableProps) {
             const region = nameParts[2]?.trim() || "";
 
             // Sort data points by period
-            const sortedData = [...item.Data].sort((a, b) => {
-              const periodA = String(a.Periodo).replace('T', '').split(' ');
-              const periodB = String(b.Periodo).replace('T', '').split(' ');
-              const yearDiff = parseInt(periodB[1]) - parseInt(periodA[1]);
+            const sortedData = [...(item.Data || [])].sort((a, b) => {
+              const periodA = String(a.Periodo).match(/T(\d)\s+(\d{4})/);
+              const periodB = String(b.Periodo).match(/T(\d)\s+(\d{4})/);
+              
+              if (!periodA || !periodB) return 0;
+              
+              const [, quarterA, yearA] = periodA;
+              const [, quarterB, yearB] = periodB;
+              
+              const yearDiff = parseInt(yearB) - parseInt(yearA);
               if (yearDiff !== 0) return yearDiff;
-              return parseInt(periodB[0]) - parseInt(periodA[0]);
+              return parseInt(quarterB) - parseInt(quarterA);
             });
 
             // Create a map of periods to values
             const periodValues = new Map(
-              sortedData.map(d => [d.Periodo, d.Valor])
+              sortedData.map(d => {
+                const periodMatch = String(d.Periodo).match(/T(\d)\s+(\d{4})/);
+                if (!periodMatch) return ['', 0];
+                return [`T${periodMatch[1]} ${periodMatch[2]}`, d.Valor];
+              })
             );
 
             return (
