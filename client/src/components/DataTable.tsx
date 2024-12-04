@@ -19,63 +19,49 @@ export function DataTable({ data }: DataTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Indicador</TableHead>
-            <TableHead>Género</TableHead>
-            <TableHead>Región</TableHead>
-            {["T4 2023", "T3 2023", "T2 2023", "T1 2023"].map((periodo) => (
-              <TableHead key={periodo} className="text-right">
-                {periodo}
-              </TableHead>
-            ))}
+            <TableHead>Año</TableHead>
+            <TableHead>Periodo</TableHead>
+            <TableHead>Nombre Periodo</TableHead>
+            <TableHead className="text-right">Tasa de Actividad</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((item) => {
-            // Extract parts from the name string safely
-            const nameParts = (item.Nombre || "").split(".");
-            const indicator = nameParts[0]?.trim() || "";
-            const gender = nameParts[1]?.includes("Hombres") ? "Hombres" : "Mujeres";
-            const region = nameParts[2]?.trim() || "";
-
-            // Sort data points by period
-            const sortedData = [...(item.Data || [])].sort((a, b) => {
-              const periodA = String(a.Periodo).match(/T(\d)\s+(\d{4})/);
-              const periodB = String(b.Periodo).match(/T(\d)\s+(\d{4})/);
-              
-              if (!periodA || !periodB) return 0;
-              
-              const [, quarterA, yearA] = periodA;
-              const [, quarterB, yearB] = periodB;
-              
-              const yearDiff = parseInt(yearB) - parseInt(yearA);
-              if (yearDiff !== 0) return yearDiff;
-              return parseInt(quarterB) - parseInt(quarterA);
-            });
-
-            // Create a map of periods to values
-            const periodValues = new Map(
-              sortedData.map(d => {
-                const periodMatch = String(d.Periodo).match(/T(\d)\s+(\d{4})/);
-                if (!periodMatch) return ['', 0];
-                return [`T${periodMatch[1]} ${periodMatch[2]}`, d.Valor];
+            // Process and sort data points
+            const processedData = item.Data
+              .filter(d => !d.Secreto) // Filter out secret records
+              .map(d => {
+                const period = typeof d.Periodo === 'object' ? d.Periodo : { Anyo: 0, Nombre_largo: '', NombrePeriodo: '' };
+                const year = period.Anyo;
+                const quarterMatch = period.Nombre_largo?.match(/Trimestre (\d)/);
+                const quarter = quarterMatch ? parseInt(quarterMatch[1]) : 0;
+                
+                return {
+                  year,
+                  quarter,
+                  periodName: period.Nombre_largo || '',
+                  shortPeriod: period.NombrePeriodo || '',
+                  value: d.Valor
+                };
               })
-            );
+              .sort((a, b) => {
+                // Sort by year (descending) and quarter (ascending)
+                const yearDiff = b.year - a.year;
+                if (yearDiff !== 0) return yearDiff;
+                return a.quarter - b.quarter;
+              });
 
-            return (
-              <TableRow key={`${indicator}-${gender}-${region}`}>
-                <TableCell className="font-medium">{String(indicator)}</TableCell>
-                <TableCell>{String(gender)}</TableCell>
-                <TableCell>{String(region)}</TableCell>
-                {["T4 2023", "T3 2023", "T2 2023", "T1 2023"].map((periodo) => {
-                  const value = periodValues.get(periodo);
-                  return (
-                    <TableCell key={periodo} className="text-right">
-                      {value !== undefined ? `${value.toFixed(2)}%` : 'N/A'}
-                    </TableCell>
-                  );
-                })}
+            // Create table rows for each processed data point
+            return processedData.map((d, idx) => (
+              <TableRow key={`${item.Nombre}-${idx}`}>
+                <TableCell>{d.year}</TableCell>
+                <TableCell>{d.periodName}</TableCell>
+                <TableCell>{d.shortPeriod}</TableCell>
+                <TableCell className="text-right">
+                  {d.value.toFixed(2)}%
+                </TableCell>
               </TableRow>
-            );
+            ));
           })}
         </TableBody>
       </Table>

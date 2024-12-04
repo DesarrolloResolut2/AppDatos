@@ -1,6 +1,12 @@
+interface Periodo {
+  Anyo: number;
+  Nombre_largo: string;
+  NombrePeriodo: string;
+}
+
 export interface DataPoint {
   Valor: number;
-  Periodo: string;
+  Periodo: Periodo;
   Secreto: boolean;
 }
 
