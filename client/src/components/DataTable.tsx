@@ -39,8 +39,8 @@ export function DataTable({ data }: DataTableProps) {
 
             // Sort data points by period
             const sortedData = [...item.Data].sort((a, b) => {
-              const periodA = a.Periodo.replace('T', '').split(' ');
-              const periodB = b.Periodo.replace('T', '').split(' ');
+              const periodA = String(a.Periodo).replace('T', '').split(' ');
+              const periodB = String(b.Periodo).replace('T', '').split(' ');
               const yearDiff = parseInt(periodB[1]) - parseInt(periodA[1]);
               if (yearDiff !== 0) return yearDiff;
               return parseInt(periodB[0]) - parseInt(periodA[0]);
