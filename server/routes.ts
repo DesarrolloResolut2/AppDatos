@@ -2,6 +2,13 @@ import type { Express } from "express";
 import axios from "axios";
 
 export function registerRoutes(app: Express) {
+  // Add CORS headers
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+
   app.get("/api/ine-data", async (req, res) => {
     try {
       const response = await axios.get(

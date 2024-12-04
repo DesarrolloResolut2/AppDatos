@@ -22,26 +22,35 @@ export function DataTable({ data }: DataTableProps) {
             <TableHead>Indicador</TableHead>
             <TableHead>Género</TableHead>
             <TableHead>Región</TableHead>
-            <TableHead className="text-right">Último Valor</TableHead>
+            <TableHead className="text-right">Valor</TableHead>
             <TableHead className="text-right">Periodo</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((item) => (
-            <TableRow key={item.Nombre}>
-              <TableCell className="font-medium">
-                {item.Nombre.split(".")[0]}
-              </TableCell>
-              <TableCell>{item.Nombre.includes("Hombres") ? "Hombres" : "Mujeres"}</TableCell>
-              <TableCell>{item.Nombre.split(".")[2]}</TableCell>
-              <TableCell className="text-right">
-                {item.Data[0]?.Valor.toFixed(2)}%
-              </TableCell>
-              <TableCell className="text-right">
-                {item.Data[0]?.Periodo}
-              </TableCell>
-            </TableRow>
-          ))}
+          {data.map((item) => {
+            // Extract parts from the name string
+            const nameParts = item.Nombre.split(".");
+            const indicator = nameParts[0]?.trim() || "";
+            const gender = nameParts[1]?.includes("Hombres") ? "Hombres" : "Mujeres";
+            const region = nameParts[2]?.trim() || "";
+
+            // Get the latest data point
+            const latestData = item.Data[0];
+            
+            return (
+              <TableRow key={item.Nombre}>
+                <TableCell className="font-medium">{indicator}</TableCell>
+                <TableCell>{gender}</TableCell>
+                <TableCell>{region}</TableCell>
+                <TableCell className="text-right">
+                  {latestData?.Valor !== undefined ? `${latestData.Valor.toFixed(2)}%` : 'N/A'}
+                </TableCell>
+                <TableCell className="text-right">
+                  {latestData?.Periodo || 'N/A'}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </Card>
