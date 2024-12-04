@@ -31,8 +31,8 @@ export function DataTable({ data }: DataTableProps) {
           provincia,
           year,
           quarter,
-          periodName: period.Nombre_largo || '',
-          shortPeriod: period.NombrePeriodo || '',
+          periodName: d.Periodo.Nombre_largo || '',
+          shortPeriod: d.Periodo.NombrePeriodo || '',
           value: d.Valor
         };
       });
