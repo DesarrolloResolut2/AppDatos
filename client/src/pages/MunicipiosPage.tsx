@@ -16,7 +16,7 @@ import {
 import { Card } from "@/components/ui/card";
 
 export function MunicipiosPage() {
-  const [selectedYear, setSelectedYear] = useState<number>(2023);
+  const [selectedYear, setSelectedYear] = useState<number>();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["municipiosData"],
@@ -35,6 +35,13 @@ export function MunicipiosPage() {
         )
       ).sort((a, b) => b - a)
     : [];
+    
+  // Set initial year when data is loaded
+  React.useEffect(() => {
+    if (years.length > 0 && !selectedYear) {
+      setSelectedYear(years[0]);
+    }
+  }, [years, selectedYear]);
 
   const filteredData = data?.sort((a, b) => {
     // Extraer números del inicio de la clasificación para ordenar correctamente
