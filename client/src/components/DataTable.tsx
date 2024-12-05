@@ -23,7 +23,7 @@ export function DataTable({ data }: DataTableProps) {
     return item.Data
       .filter(d => !d.Secreto) // Filter out secret records
       .map(d => {
-        const year = d.Periodo.Anyo;
+        const year = d.Anyo;
         const quarterMatch = d.Periodo.Nombre_largo.match(/Trimestre (\d)/);
         const quarter = quarterMatch ? parseInt(quarterMatch[1]) : 0;
         
@@ -32,7 +32,7 @@ export function DataTable({ data }: DataTableProps) {
           year,
           quarter,
           periodName: d.Periodo.Nombre_largo || '',
-          shortPeriod: d.Periodo.NombrePeriodo || '',
+          shortPeriod: d.NombrePeriodo || '',
           value: d.Valor
         };
       });
