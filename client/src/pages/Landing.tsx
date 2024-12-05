@@ -42,7 +42,6 @@ export function Landing() {
               <SelectItem value="/natalidad">Tasa de natalidad</SelectItem>
               <SelectItem value="/mortalidad">Tasa de mortalidad</SelectItem>
               <SelectItem value="/pib">Tasa P.I.B a precios de mercado</SelectItem>
-              <SelectItem value="/censo-agrario">Censo Agrario</SelectItem>
             </SelectContent>
           </Select>
         </Card>

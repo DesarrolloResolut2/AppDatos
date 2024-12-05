@@ -68,9 +68,6 @@ export function Home() {
           <Link href="/natalidad" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
             Tasa de Natalidad
           </Link>
-          <Link href="/censo-agrario" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-            Censo Agrario
-          </Link>
         </div>
       </div>
 
