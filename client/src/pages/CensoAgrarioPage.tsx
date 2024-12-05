@@ -20,37 +20,61 @@ export function CensoAgrarioPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["censoAgrarioData"],
     queryFn: async () => {
-      const response = await fetch("https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/51156?nult=1");
+      const response = await fetch("https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/51156?nult=10");
       if (!response.ok) {
         throw new Error('Error al obtener datos del censo agrario');
       }
       const jsonData = await response.json();
-      
       return processData(jsonData);
     },
   });
 
   const processData = (rawData: any[]) => {
     const processedData = rawData.map(item => {
-      const partes = item.Nombre.split(". ");
-      const provincia = partes[partes.length - 1]?.trim() || "Total Nacional";
+      // Procesar el nombre para extraer la información
+      const nombreCompleto = item.Nombre;
+      let provincia = "Total Nacional";
+      let superficie = "Todas las superficies";
+      let personalidadJuridica = "Todas las personalidades jurídicas";
+
+      if (nombreCompleto.includes(".")) {
+        const partes = nombreCompleto.split(".");
+        provincia = partes[partes.length - 1].trim();
+      }
+
+      const partesSeparadas = nombreCompleto.split(",").map(p => p.trim());
+      if (partesSeparadas.length > 1) {
+        superficie = partesSeparadas[1];
+        if (partesSeparadas.length > 2) {
+          personalidadJuridica = partesSeparadas[2];
+        }
+      }
+
       const esNacional = provincia === "Total Nacional";
       
-      // Extraer información de superficie y personalidad jurídica
-      const infoAdicional = item.Nombre.split(", ");
-      const superficie = infoAdicional[1] || "Todas las superficies";
-      const personalidadJuridica = infoAdicional[2] || "Todas las personalidades jurídicas";
-      
-      return {
-        provincia: provincia,
-        superficie: superficie,
-        personalidadJuridica: personalidadJuridica,
-        numeroExplotaciones: item.Data[0]?.Valor || 0,
-        tamanoMedio: item.Data[1]?.Valor || 0,
-        valor: item.Data[0]?.Valor || 0,
-        esNacional: esNacional,
-        secreto: item.Data[0]?.Secreto || false
+      // Procesar los datos
+      const dataPoint = {
+        provincia,
+        superficie,
+        personalidadJuridica,
+        numeroExplotaciones: 0,
+        tamanoMedio: 0,
+        valor: 0,
+        esNacional,
+        secreto: false
       };
+
+      // Asignar valores si están disponibles
+      if (item.Data && item.Data.length > 0) {
+        dataPoint.numeroExplotaciones = item.Data[0]?.Valor || 0;
+        dataPoint.valor = item.Data[0]?.Valor || 0;
+        dataPoint.secreto = item.Data[0]?.Secreto || false;
+        if (item.Data.length > 1) {
+          dataPoint.tamanoMedio = item.Data[1]?.Valor || 0;
+        }
+      }
+
+      return dataPoint;
     });
 
     // Filtrar datos duplicados y ordenar por provincia
