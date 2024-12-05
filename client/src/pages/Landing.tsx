@@ -37,6 +37,7 @@ export function Landing() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="/tasas">Tasas de actividad, paro y empleo</SelectItem>
+              <SelectItem value="/censo">Censo por provincias</SelectItem>
             </SelectContent>
           </Select>
         </Card>

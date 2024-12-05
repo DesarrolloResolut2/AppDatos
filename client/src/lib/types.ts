@@ -17,3 +17,8 @@ export interface INEDataItem {
   Unidad: string;
   Data: DataPoint[];
 }
+
+export interface CensoDataItem extends INEDataItem {
+  tipo: 'provincia' | 'municipio';
+  nombreLimpio: string;
+}

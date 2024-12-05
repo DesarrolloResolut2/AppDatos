@@ -1,0 +1,73 @@
+Guía para añadir la categoría "Censo por provincias" con subcategoría "Municipios" a tu app de React
+1. Objetivo
+Crear una nueva página en tu aplicación React que muestre datos de población organizados en dos categorías:
+
+Provincias: Mostrando información general de una provincia (por ejemplo, León).
+Municipios: Detallando datos específicos de pequeñas localidades dentro de la provincia (por ejemplo, Acebedo, Algadefe, etc.).
+Cada categoría debe mostrar una tabla con los datos organizados en las siguientes columnas:
+
+Nombre: Provincia o municipio, según corresponda.
+Año: Correspondiente al campo Anyo dentro del objeto Data.
+Personas: Correspondiente al campo Valor dentro del objeto Data.
+2. Comprensión de la estructura de la API
+La API a utilizar está disponible en la siguiente URL:
+
+ruby
+Copiar código
+https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/2877?nult=4&det=2
+La API proporciona datos organizados por provincia. En este caso:
+
+Provincia (León): Se encuentra en el campo Nombre del objeto principal, antes del primer punto ("León. Total. Total habitantes. Personas." → "León").
+Municipios (Acebedo, Algadefe, etc.): Estos podrían corresponder a datos adicionales obtenidos desde una extensión de la API o bien organizados de manera local si se complementan con otro archivo o recurso.
+Cada objeto JSON tiene dos secciones clave:
+
+Nombre: Identifica si los datos son para una provincia (e.g., "León") o un municipio específico.
+Data: Es un array de objetos con:
+Anyo: El año del dato.
+Valor: El número de habitantes en ese año.
+Ejemplo para una provincia:
+
+json
+Copiar código
+{
+  "Nombre": "León. Total. Total habitantes. Personas.",
+  "Data": [
+    { "Anyo": 2023, "Valor": 447463 },
+    { "Anyo": 2022, "Valor": 448179 }
+  ]
+}
+Ejemplo para un municipio:
+
+json
+Copiar código
+{
+  "Nombre": "Acebedo. Total. Total habitantes. Personas.",
+  "Data": [
+    { "Anyo": 2023, "Valor": 512 },
+    { "Anyo": 2022, "Valor": 530 }
+  ]
+}
+3. Pasos para implementar la nueva funcionalidad
+Crear la página CensoPorProvincias.js:
+
+Crea un nuevo componente en tu carpeta de páginas.
+Utiliza un useEffect para realizar una llamada a la API y cargar los datos al cargar la página.
+Añadir un estado para manejar los datos:
+
+Utiliza useState para almacenar los datos obtenidos de la API.
+Crea un estado separado si quieres manejar datos de provincias y municipios por separado.
+Filtrar y procesar los datos:
+
+Para provincias: Filtra los datos donde el campo Nombre coincida con "León. Total. Total habitantes. Personas.".
+Para municipios: Filtra los datos donde el campo Nombre incluya nombres específicos como "Acebedo" o "Algadefe".
+Diseñar las tablas:
+
+Usa una tabla para cada categoría (Provincias y Municipios).
+Extrae los campos Anyo y Valor del objeto Data para mostrarlos como filas en la tabla.
+Añadir la nueva ruta a la aplicación:
+
+En el archivo donde tienes configurado tu enrutador (por ejemplo, App.js o Routes.js), añade una ruta que apunte a la nueva página CensoPorProvincias.
+Testear la funcionalidad:
+
+Verifica que los datos de las tablas se muestran correctamente para cada categoría.
+Asegúrate de que el diseño es claro y responsivo.
