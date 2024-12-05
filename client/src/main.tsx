@@ -11,6 +11,7 @@ import { CensoPage } from "./pages/CensoPage";
 import { MunicipiosPage } from "./pages/MunicipiosPage";
 import { NatalidadPage } from "./pages/NatalidadPage";
 import { MortalidadPage } from "./pages/MortalidadPage";
+import { PIBPage } from "./pages/PIBPage";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/municipios" component={MunicipiosPage} />
       <Route path="/natalidad" component={NatalidadPage} />
       <Route path="/mortalidad" component={MortalidadPage} />
+      <Route path="/pib" component={PIBPage} />
       <Route>404 - Página no encontrada</Route>
     </Switch>
   );
