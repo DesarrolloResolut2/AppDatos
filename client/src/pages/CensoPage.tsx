@@ -17,7 +17,7 @@ import { Card } from "@/components/ui/card";
 export function CensoPage() {
   const [selectedTipo, setSelectedTipo] = useState<'provincia' | 'municipio'>('provincia');
   const [selectedYear, setSelectedYear] = useState<number>(2023);
-  const [selectedProvincia, setSelectedProvincia] = useState<string>("");
+  const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
   const [selectedGenero, setSelectedGenero] = useState<string>("Total");
 
   const { data, isLoading, error } = useQuery({
@@ -41,7 +41,7 @@ export function CensoPage() {
 
   const filteredData = data?.filter(item => {
     const tipoMatch = item.tipo === selectedTipo;
-    const provinciaMatch = !selectedProvincia || item.nombreLimpio === selectedProvincia;
+    const provinciaMatch = selectedProvincia === "todas" || item.nombreLimpio === selectedProvincia;
     const generoMatch = selectedGenero === "Total" || item.genero === selectedGenero;
     return tipoMatch && provinciaMatch && generoMatch;
   });
@@ -100,7 +100,7 @@ export function CensoPage() {
                     <SelectValue placeholder="Seleccionar provincia" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas</SelectItem>
+                    <SelectItem value="todas">Todas</SelectItem>
                     {provincias.map((provincia) => (
                       <SelectItem key={provincia} value={provincia}>
                         {provincia}
