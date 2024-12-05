@@ -40,6 +40,7 @@ export function Landing() {
               <SelectItem value="/censo">Censo por provincias</SelectItem>
               <SelectItem value="/municipios">Municipios por habitante</SelectItem>
               <SelectItem value="/natalidad">Tasa de natalidad</SelectItem>
+              <SelectItem value="/mortalidad">Tasa de mortalidad</SelectItem>
             </SelectContent>
           </Select>
         </Card>
