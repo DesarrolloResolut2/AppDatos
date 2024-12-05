@@ -56,9 +56,19 @@ export function Home() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">
-        Tasas de Actividad, Paro y Empleo
-      </h1>
+      <div className="mb-8 text-center space-y-4">
+        <h1 className="text-3xl font-bold">
+          Portal de Datos INE
+        </h1>
+        <div className="flex justify-center gap-4">
+          <Link href="/tasas" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+            Tasas de Actividad, Paro y Empleo
+          </Link>
+          <Link href="/natalidad" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+            Tasa de Natalidad
+          </Link>
+        </div>
+      </div>
 
       <div className="space-y-6">
         <Filters

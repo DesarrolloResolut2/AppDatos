@@ -9,6 +9,7 @@ import { Landing } from "./pages/Landing";
 import { TasasPage } from "./pages/TasasPage";
 import { CensoPage } from "./pages/CensoPage";
 import { MunicipiosPage } from "./pages/MunicipiosPage";
+import { NatalidadPage } from "./pages/NatalidadPage";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/tasas" component={TasasPage} />
       <Route path="/censo" component={CensoPage} />
       <Route path="/municipios" component={MunicipiosPage} />
+      <Route path="/natalidad" component={NatalidadPage} />
       <Route>404 - Página no encontrada</Route>
     </Switch>
   );
