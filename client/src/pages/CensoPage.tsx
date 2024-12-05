@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { DataTable } from "../components/DataTable";
+import { CensoDataTable } from "../components/CensoDataTable";
 import { fetchCensoData } from "../lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,6 +17,8 @@ import { Card } from "@/components/ui/card";
 export function CensoPage() {
   const [selectedTipo, setSelectedTipo] = useState<'provincia' | 'municipio'>('provincia');
   const [selectedYear, setSelectedYear] = useState<number>(2023);
+  const [selectedProvincia, setSelectedProvincia] = useState<string>("");
+  const [selectedGenero, setSelectedGenero] = useState<string>("Total");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["censoData"],
@@ -25,11 +27,24 @@ export function CensoPage() {
 
   // Extract unique years from data
   const years = data
-    ? [...new Set(data.flatMap(item => item.Data.map(d => d.Anyo)))]
+    ? Array.from(new Set(data.flatMap(item => item.Data.map(d => d.Anyo))))
         .sort((a, b) => b - a)
     : [];
 
-  const filteredData = data?.filter(item => item.tipo === selectedTipo);
+  // Extract unique provincias
+  const provincias = data
+    ? Array.from(new Set(data
+        .filter(item => item.tipo === 'provincia')
+        .map(item => item.nombreLimpio)))
+        .sort()
+    : [];
+
+  const filteredData = data?.filter(item => {
+    const tipoMatch = item.tipo === selectedTipo;
+    const provinciaMatch = !selectedProvincia || item.nombreLimpio === selectedProvincia;
+    const generoMatch = selectedGenero === "Total" || item.genero === selectedGenero;
+    return tipoMatch && provinciaMatch && generoMatch;
+  });
 
   if (error) {
     return (
@@ -57,7 +72,10 @@ export function CensoPage() {
               </label>
               <Select
                 value={selectedTipo}
-                onValueChange={(value: 'provincia' | 'municipio') => setSelectedTipo(value)}
+                onValueChange={(value: 'provincia' | 'municipio') => {
+                  setSelectedTipo(value);
+                  setSelectedProvincia(""); // Reset provincia when changing tipo
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar tipo" />
@@ -65,6 +83,49 @@ export function CensoPage() {
                 <SelectContent>
                   <SelectItem value="provincia">Provincias</SelectItem>
                   <SelectItem value="municipio">Municipios</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedTipo === 'provincia' && (
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">
+                  Provincia
+                </label>
+                <Select
+                  value={selectedProvincia}
+                  onValueChange={setSelectedProvincia}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar provincia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todas</SelectItem>
+                    {provincias.map((provincia) => (
+                      <SelectItem key={provincia} value={provincia}>
+                        {provincia}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-2 block">
+                Género
+              </label>
+              <Select
+                value={selectedGenero}
+                onValueChange={setSelectedGenero}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar género" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Total">Total</SelectItem>
+                  <SelectItem value="Hombres">Hombres</SelectItem>
+                  <SelectItem value="Mujeres">Mujeres</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -99,7 +160,7 @@ export function CensoPage() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <DataTable data={filteredData || []} selectedYear={selectedYear} />
+          <CensoDataTable data={filteredData || []} selectedYear={selectedYear} />
         )}
       </div>
     </div>

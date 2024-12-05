@@ -21,4 +21,5 @@ export interface INEDataItem {
 export interface CensoDataItem extends INEDataItem {
   tipo: 'provincia' | 'municipio';
   nombreLimpio: string;
+  genero: 'Hombres' | 'Mujeres' | 'Total';
 }
