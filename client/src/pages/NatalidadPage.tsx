@@ -16,11 +16,13 @@ import { Card } from "@/components/ui/card";
 
 export function NatalidadPage() {
   interface INENatalidadResponse {
-    Data: {
+    Nombre: string;
+    Data: Array<{
       Anyo: number;
       Valor: number;
       Secreto: boolean;
-    }[];
+      Nombre: string;
+    }>;
   }
 
   const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
@@ -32,18 +34,25 @@ export function NatalidadPage() {
       if (!response.ok) {
         throw new Error('Error al obtener datos de natalidad');
       }
-      const jsonData: INENatalidadResponse = await response.json();
-      return jsonData.Data
-        .filter(item => !item.Secreto)
-        .map(item => {
-          const parts = jsonData.Nombre.split(". ");
-          const provincia = parts.length > 1 ? parts[1].replace(".", "") : "Desconocida";
-          return {
-            provincia,
-            year: item.Anyo,
-            valor: item.Valor
-          };
-        });
+      const jsonData = await response.json();
+      const processedData: { provincia: string; year: number; valor: number }[] = [];
+      
+      jsonData.forEach((item: INENatalidadResponse) => {
+        const parts = item.Nombre.split(".");
+        const provincia = parts[1]?.trim() || "Desconocida";
+        
+        item.Data
+          .filter(d => !d.Secreto)
+          .forEach(d => {
+            processedData.push({
+              provincia,
+              year: d.Anyo,
+              valor: d.Valor
+            });
+          });
+      });
+      
+      return processedData;
     },
   });
 
