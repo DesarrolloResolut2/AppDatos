@@ -29,3 +29,14 @@ export interface PIBDataItem extends INEDataItem {
   categoria: string;
   tipo: 'general' | 'industria';
 }
+
+export interface DataPayload {
+  Anyo: number;
+  NombrePeriodo: string;
+  Valor: number;
+  Periodo: {
+    Anyo: number;
+    Nombre_largo: string;
+  };
+  Secreto: boolean;
+}

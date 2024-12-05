@@ -19,7 +19,7 @@ export function Home() {
 
   // Extract unique years from data
   const years = data
-    ? [...new Set(data.flatMap(item => item.Data.map(d => d.Anyo)))]
+    ? Array.from(new Set(data.flatMap(item => item.Data.map(d => d.Anyo))))
         .sort((a, b) => b - a)
     : [];
 
@@ -27,10 +27,10 @@ export function Home() {
 
   // Extract unique provincias from data
   const provincias = data
-    ? [...new Set(data.map(item => {
+    ? Array.from(new Set(data.map(item => {
         const parts = item.Nombre.split(". ");
-        return parts.length > 2 ? parts[2] : null;
-      }).filter(Boolean))]
+        return parts.length > 2 ? parts[2] : "";
+      }).filter(Boolean)))
         .sort()
     : [];
 
