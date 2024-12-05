@@ -1,0 +1,114 @@
+Guía para implementar la categoría "Censo Agrario por Tamaño de Superficie y Personalidad Jurídica"
+1. Objetivo de la nueva categoría
+Esta categoría tiene como objetivo mostrar los datos del Censo Agrario desglosados por diferentes parámetros, tales como el tamaño de la superficie y la personalidad jurídica. La información se obtiene de la API proporcionada y se presentará tanto a nivel nacional como por provincia.
+
+Los usuarios podrán filtrar los datos de acuerdo con diferentes criterios, y la tabla mostrará los valores relevantes para cada uno de ellos.
+
+2. URL de la API
+La información del Censo Agrario se obtiene de la siguiente URL de la API:
+
+ruby
+Copiar código
+https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/51156?nult=4&det=2
+3. Estructura de la API
+La respuesta de la API contiene información tanto a nivel nacional como desglosada por provincias, y está organizada en diferentes categorías:
+
+Nivel Nacional: El primer conjunto de datos contiene información global a nivel nacional, es decir, no está filtrada por provincia ni por otros parámetros. La estructura básica de los datos es:
+
+json
+Copiar código
+{
+  "Nombre": "Total Nacional, Todas las explotaciones, Todas las personalidades jurídicas, Nº explotaciones, Valor absoluto",
+  "Data": [
+    {
+      "Valor": 914871.0,
+      "Secreto": false
+    }
+  ]
+}
+Los campos clave en este caso son:
+
+Nombre: Una descripción que incluye varias categorías combinadas: "Total Nacional", "Todas las explotaciones", "Todas las personalidades jurídicas", "Nº explotaciones", y "Valor absoluto".
+Data: Un array que contiene los valores reales. En este caso, un valor absoluto correspondiente a la cantidad de explotaciones a nivel nacional.
+Datos por Provincia y Categorías Específicas: Para cada provincia, los datos son más específicos y desglosados por categorías tales como el tipo de superficie, personalidad jurídica, y número de explotaciones.
+
+Ejemplo de una provincia con valores desglosados:
+
+json
+Copiar código
+{
+  "Nombre": "Cádiz, Menor de 1 ha., Sociedades mercantiles, Nº explotaciones, Tamaño medio",
+  "Data": [
+    {
+      "Valor": null,
+      "Secreto": true
+    }
+  ]
+}
+En este caso, Nombre es una cadena compuesta por:
+
+La provincia (en este caso, "Cádiz").
+El tamaño de superficie (por ejemplo, "Menor de 1 ha.").
+La personalidad jurídica (en este caso, "Sociedades mercantiles").
+El número de explotaciones y el tamaño medio.
+En los valores de la propiedad Data, se puede encontrar información sobre el valor correspondiente a cada categoría. Es importante destacar que algunos valores pueden ser nulos o marcados como secretos ("Secreto": true), lo que significa que esos datos no están disponibles.
+
+4. Datos a mostrar en la tabla
+La tabla en la aplicación deberá mostrar los datos desglosados de la siguiente manera:
+
+A nivel nacional:
+
+Categorías: La información debe ser organizada bajo las siguientes categorías:
+Total Nacional: El nombre de esta categoría es "Total Nacional".
+Superficie: Correspondiente a "Todas las explotaciones".
+Personalidad Jurídica: Correspondiente a "Todas las personalidades jurídicas".
+Número de Explotaciones: El valor que corresponde a la cantidad de explotaciones.
+Valor Absoluto: El valor correspondiente a las explotaciones, en términos absolutos (puede estar en miles).
+Por provincia: Cuando el usuario seleccione una provincia, se deben cargar los datos específicos para esa provincia, y la tabla mostrará los siguientes datos:
+
+Provincia: Extraído del campo Nombre de la API (por ejemplo, "Cádiz").
+Superficie: Extraído de la categoría de superficie dentro del campo Nombre (por ejemplo, "Menor de 1 ha.").
+Personalidad Jurídica: Extraído del campo Nombre (por ejemplo, "Sociedades mercantiles").
+Número de Explotaciones: Correspondiente al número de explotaciones en esa provincia.
+Tamaño Medio: Este valor también está incluido en el campo Nombre y puede estar relacionado con el tamaño medio de las explotaciones.
+Valor: El valor correspondiente a la explotación o a la categoría seleccionada. Este valor puede estar en porcentajes, en miles o en tamaño medio, dependiendo de la categoría.
+5. Implementación en la aplicación React
+Realizar la solicitud a la API:
+
+Se debe hacer una solicitud HTTP a la URL de la API proporcionada para obtener los datos. Los datos deben ser procesados y almacenados en el estado de la aplicación (por ejemplo, utilizando useState en React).
+Filtrar los datos por provincia:
+
+Una vez que se hayan cargado los datos de la API, se debe permitir a los usuarios seleccionar una provincia de un filtro desplegable.
+Dependiendo de la provincia seleccionada, la aplicación debe cargar los datos desglosados para esa provincia y mostrar los valores relevantes en la tabla.
+Mostrar los datos en la tabla:
+
+La tabla debe mostrar dos secciones:
+Datos nacionales: Se debe mostrar la categoría "Total Nacional" junto con las otras categorías como "Superficie", "Personalidad Jurídica", "Número de Explotaciones", y "Valor Absoluto".
+Datos por provincia: Cuando el usuario seleccione una provincia, se deben cargar las categorías específicas para esa provincia y mostrar los valores de "Superficie", "Personalidad Jurídica", "Número de Explotaciones", y "Tamaño Medio".
+Cada fila en la tabla mostrará una categoría diferente (por ejemplo, superficie, tipo de personalidad jurídica, etc.) y su correspondiente valor.
+
+Manejo de valores nulos o secretos:
+
+Algunos valores pueden estar marcados como secretos o nulos. Estos deben ser identificados en la API (cuando el campo Valor es null o cuando Secreto es true).
+Si el valor es nulo o secreto, la tabla debe mostrar un mensaje como "Dato no disponible" o "Secreto" en lugar del valor.
+6. Ejemplo de la tabla
+A nivel nacional:
+Categoría	Valor (número de explotaciones o valor absoluto)
+Total Nacional	914,871
+Superficie	Todas las explotaciones
+Personalidad Jurídica	Todas las personalidades jurídicas
+Número de Explotaciones	914,871
+Valor Absoluto	914,871
+Por provincia (ejemplo: Cádiz):
+Provincia	Superficie	Personalidad Jurídica	Nº Explotaciones	Tamaño Medio	Valor
+Cádiz	Menor de 1 ha.	Sociedades mercantiles	150,000	3.2 ha	10,000
+7. Consideraciones adicionales
+Filtros:
+
+Implementa un sistema de filtros para que los usuarios puedan seleccionar una provincia y obtener los datos correspondientes.
+Formato de los valores:
+
+Algunos valores pueden estar en formato de porcentaje o en tamaño medio (hectáreas, etc.), asegúrate de mostrar las unidades adecuadas junto a los valores.
+Manejo de errores:
+
+Si no se encuentran datos para una categoría o provincia seleccionada, asegúrate de mostrar un mensaje claro para el usuario.
