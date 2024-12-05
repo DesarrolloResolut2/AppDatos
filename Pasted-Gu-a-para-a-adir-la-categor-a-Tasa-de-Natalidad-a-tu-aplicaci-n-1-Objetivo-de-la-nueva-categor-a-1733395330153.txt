@@ -1,0 +1,83 @@
+Guía para añadir la categoría "Tasa de Natalidad" a tu aplicación
+1. Objetivo de la nueva categoría
+El objetivo es incorporar a la aplicación una nueva categoría que muestre la tasa de natalidad. La información será presentada en una tabla que incluirá el nombre de la provincia, los años disponibles, y el valor correspondiente a cada año (tasa de natalidad por cada mil habitantes).
+________________________________________
+2. URL de la API
+La información se obtiene de la siguiente API:
+https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1470?nult=4&det=2
+________________________________________
+3. Comprensión de la estructura de la API
+La API devuelve datos en formato JSON con los siguientes campos relevantes:
+1.	Nombre:
+o	Indica la provincia relacionada con los datos. En este caso, debes interpretar este campo como "León".
+2.	Unidad:
+o	Contiene información sobre la unidad de medida de los valores. El campo Nombre dentro de Unidad especifica que se mide en "Nacidos por mil habitantes". Este dato es importante para contextualizar la información en la tabla.
+3.	Data:
+o	Es un array que contiene los datos históricos. Cada objeto dentro de Data tiene varios campos relevantes:
+	Anyo: Representa el año al que corresponde el dato (por ejemplo, 2023, 2022, 2021, 2020).
+	Valor: Es la tasa de natalidad registrada para el año correspondiente, medida en "Nacidos por mil habitantes" (por ejemplo, 4.69).
+	Secreto: Indica si el valor es confidencial (false en este caso, por lo que los datos son utilizables).
+Ejemplo de un objeto JSON de la API:
+json
+Copiar código
+{
+  "Nombre": "Fecundidad. León.",
+  "Unidad": {
+    "Nombre": "Nacidos por mil habitantes"
+  },
+  "Data": [
+    {
+      "Anyo": 2023,
+      "Valor": 4.69,
+      "Secreto": false
+    },
+    {
+      "Anyo": 2022,
+      "Valor": 4.81,
+      "Secreto": false
+    },
+    {
+      "Anyo": 2021,
+      "Valor": 5.1,
+      "Secreto": false
+    }
+  ]
+}
+________________________________________
+4. Datos que se mostrarán en la tabla
+La tabla de la aplicación mostrará los siguientes datos organizados:
+•	Provincia: Siempre será "León", ya que esta API proporciona datos específicos de esta provincia.
+•	Años disponibles: Extraídos del campo Anyo en cada objeto dentro de Data (por ejemplo, 2023, 2022, 2021, etc.).
+•	Tasa de natalidad: Extraída del campo Valor, que representa el número de nacimientos por cada mil habitantes para cada año.
+Ejemplo conceptual de la tabla:
+Provincia	Año	Tasa de Natalidad (por mil habitantes)
+León	2023	4.69
+León	2022	4.81
+León	2021	5.10
+________________________________________
+5. Pasos para implementar esta categoría en React
+1.	Realizar la solicitud a la API:
+o	Configura tu aplicación para realizar una llamada HTTP a la URL de la API proporcionada.
+o	Asegúrate de manejar errores si la solicitud falla o si la API no devuelve datos.
+2.	Interpretar la estructura de la API:
+o	Identifica los datos clave dentro de la respuesta JSON:
+	Usa el campo Nombre para confirmar que la provincia es "León".
+	Usa el campo Data para obtener los años (Anyo) y los valores (Valor).
+o	Confirma que el campo Secreto es false antes de usar los valores.
+3.	Organizar los datos para la tabla:
+o	Para cada entrada en Data, crea un objeto que asocie el año, el valor, y la provincia.
+4.	Renderizar la tabla:
+o	Diseña la tabla para que sea clara y responsiva.
+o	Los encabezados de columna deben incluir:
+	Provincia
+	Año
+	Tasa de Natalidad (por mil habitantes)
+o	Cada fila debe mostrar los datos correspondientes de la API.
+________________________________________
+6. Consideraciones adicionales
+1.	Formato del valor:
+o	Asegúrate de que el campo Valor se muestre con dos decimales para mayor claridad (por ejemplo, 4.69).
+2.	Manejo de errores:
+o	Si la API no responde o devuelve datos incompletos, muestra un mensaje de error amigable al usuario.
+3.	Revisión visual:
+o	Verifica que los datos sean fáciles de interpretar y que estén correctamente alineados en la tabla.
