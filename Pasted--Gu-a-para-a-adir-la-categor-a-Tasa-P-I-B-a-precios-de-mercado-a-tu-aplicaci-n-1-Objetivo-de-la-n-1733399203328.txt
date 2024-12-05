@@ -1,0 +1,140 @@
+
+Guía para añadir la categoría "Tasa P.I.B a precios de mercado" a tu aplicación
+1. Objetivo de la nueva categoría
+El objetivo de esta categoría es mostrar el Producto Interior Bruto (P.I.B) de la provincia seleccionada, tanto a nivel general como desglosado por tipo de industria. Los datos serán obtenidos desde la API del Instituto Nacional de Estadística (INE) y se presentarán en una tabla organizada por año y tipo de industria. Los valores de P.I.B están expresados en miles de euros.
+
+2. URL de la API
+La información sobre el Producto Interior Bruto a precios de mercado se obtiene de la siguiente API:
+
+ruby
+Copiar código
+https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/67284?nult=4&det=2
+3. Comprensión de la estructura de la API
+La API devuelve una respuesta en formato JSON que contiene varios campos relevantes. Aquí te explico cómo entender la estructura de los datos:
+
+Nombre:
+
+Este campo contiene el nombre del conjunto de datos. En el ejemplo, el valor es "León, PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO". Este valor contiene el nombre de la provincia (en este caso, León) y el tipo de categoría (P.I.B a precios de mercado).
+Para cada provincia, los datos estarán organizados de manera similar, pero el nombre de la provincia cambiará, como por ejemplo "Madrid, PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO".
+Data:
+
+Este campo contiene un array con los valores históricos para el P.I.B. tanto a nivel general como por tipo de industria. Cada objeto dentro de Data contiene:
+NombrePeriodo: El nombre del periodo (por ejemplo, "2021(P)", "2020", etc.). En este caso, es importante extraer solo el año sin el sufijo (P).
+Valor: El valor del P.I.B en miles de euros para ese periodo (por ejemplo, 10224642).
+Secreto: Este campo indica si el dato es confidencial. Siempre será false en este caso, por lo que los datos son públicos.
+Ejemplo de un objeto de la API:
+
+json
+Copiar código
+{
+  "Nombre": "León, PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO",
+  "Data": [
+    {
+      "NombrePeriodo": "2021(P)",
+      "Valor": 10224642,
+      "Secreto": false
+    },
+    {
+      "NombrePeriodo": "2020",
+      "Valor": 9304383,
+      "Secreto": false
+    },
+    {
+      "NombrePeriodo": "2019",
+      "Valor": 10093250,
+      "Secreto": false
+    },
+    {
+      "NombrePeriodo": "2018",
+      "Valor": 9831635,
+      "Secreto": false
+    }
+  ]
+}
+Datos por industria:
+
+Además de los datos generales del P.I.B a precios de mercado, la API también ofrece información desglosada por tipos de industria. Por ejemplo, los datos del sector "Agricultura, ganadería, silvicultura y pesca" para la provincia de León.
+La estructura es similar a la de los datos generales, pero el campo "Nombre" cambia para reflejar el tipo de industria.
+Ejemplo de datos por industria:
+
+json
+Copiar código
+{
+  "Nombre": "León, A. Agricultura, ganadería, silvicultura y pesca",
+  "Data": [
+    {
+      "NombrePeriodo": "2021(P)",
+      "Valor": 487420,
+      "Secreto": false
+    },
+    {
+      "NombrePeriodo": "2020",
+      "Valor": 398244,
+      "Secreto": false
+    },
+    {
+      "NombrePeriodo": "2019",
+      "Valor": 365818,
+      "Secreto": false
+    },
+    {
+      "NombrePeriodo": "2018",
+      "Valor": 367205,
+      "Secreto": false
+    }
+  ]
+}
+4. Datos que se mostrarán en la tabla
+La tabla de tu aplicación mostrará los siguientes datos, organizados en dos secciones:
+
+Sección 1: Datos Generales del P.I.B a precios de mercado
+Provincia: Extraído del campo Nombre de la API, por ejemplo, "León".
+Categoría: Extraído del campo Nombre (por ejemplo, "PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO").
+Año: Extraído de la propiedad NombrePeriodo dentro del array Data. Asegúrate de extraer solo el año (por ejemplo, "2021" de "2021(P)").
+Valor: Extraído del campo Valor dentro de Data, que representa el Producto Interior Bruto en miles de euros.
+Sección 2: Datos por tipo de industria
+Provincia: Extraído del campo Nombre de la API, por ejemplo, "León".
+Industria: Extraído del campo Nombre (por ejemplo, "Agricultura, ganadería, silvicultura y pesca").
+Año: Extraído de la propiedad NombrePeriodo dentro de Data (como en la sección anterior, se debe extraer solo el año).
+Valor: Extraído del campo Valor dentro de Data, que representa el Producto Interior Bruto en miles de euros.
+Formato de la tabla
+Provincia	Categoría General	Año	Valor (miles de euros)
+León	PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO	2021	10,224,642
+León	PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO	2020	9,304,383
+León	PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO	2019	10,093,250
+León	PRODUCTO INTERIOR BRUTO A PRECIOS DE MERCADO	2018	9,831,635
+Datos por tipo de industria:
+
+Provincia	Industria	Año	Valor (miles de euros)
+León	Agricultura, ganadería, silvicultura y pesca	2021	487,420
+León	Agricultura, ganadería, silvicultura y pesca	2020	398,244
+León	Agricultura, ganadería, silvicultura y pesca	2019	365,818
+León	Agricultura, ganadería, silvicultura y pesca	2018	367,205
+5. Pasos para implementar esta categoría en React
+Realizar la solicitud a la API:
+
+Configura tu aplicación para hacer una solicitud HTTP a la URL de la API proporcionada.
+Asegúrate de manejar correctamente los posibles errores, como una respuesta vacía o la falta de conexión.
+Interpretar la estructura de la API:
+
+Una vez que recibas los datos, extrae la información de la provincia desde el campo Nombre para identificar la provincia seleccionada (por ejemplo, "León").
+Extrae los datos de la propiedad Data para obtener los valores del P.I.B tanto a nivel general como por industria.
+Asegúrate de eliminar el sufijo (P) de los valores del campo NombrePeriodo y extraer solo el año.
+Organizar los datos para la tabla:
+
+Para la primera sección (Datos Generales), organiza los datos por provincia y categoría, extrayendo el año y el valor correspondiente.
+Para la segunda sección (Datos por Industria), organiza los datos por provincia, tipo de industria, año y valor.
+Renderizar la tabla:
+
+Muestra los datos en una tabla responsiva, asegurándote de que sea fácil de leer.
+Si la API devuelve muchos datos, considera implementar paginación o búsqueda para mejorar la experiencia del usuario.
+6. Consideraciones adicionales
+Formato de los valores:
+
+Asegúrate de que los valores de la columna "Valor" se muestren correctamente, sin el sufijo "(P)" en los años y con la unidad de medida de "miles de euros".
+Manejo de errores:
+
+Si la API no responde correctamente o si hay problemas con los datos, proporciona un mensaje de error o una pantalla de carga que informe al usuario.
+Estilo y visualización:
+
+Asegúrate de que la tabla sea clara y bien organizada, utilizando un diseño limpio y fácil de seguir.
