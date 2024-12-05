@@ -45,6 +45,7 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
 }
 export interface MunicipiosDataItem extends INEDataItem {
   clasificacion: string;
+  provincia: string;
 }
 
 export async function fetchMunicipiosData(): Promise<MunicipiosDataItem[]> {
@@ -52,11 +53,13 @@ export async function fetchMunicipiosData(): Promise<MunicipiosDataItem[]> {
     const response = await axios.get<INEDataItem[]>(MUNICIPIOS_API_URL);
     return response.data.map(item => {
       const nombrePartes = item.Nombre.split(", ");
-      const clasificacion = nombrePartes[1] || "";
+      const [codigoProvincia, clasificacion] = nombrePartes;
+      const provincia = codigoProvincia.split(" ").slice(1).join(" "); // Elimina el código numérico
       
       return {
         ...item,
-        clasificacion
+        clasificacion,
+        provincia
       };
     });
   } catch (error) {

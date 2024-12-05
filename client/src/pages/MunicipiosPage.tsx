@@ -16,39 +16,21 @@ import {
 import { Card } from "@/components/ui/card";
 
 export function MunicipiosPage() {
-  const [selectedYear, setSelectedYear] = useState<number>();
+  const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["municipiosData"],
     queryFn: fetchMunicipiosData,
   });
 
-  // Extract unique years from data
-  const years = data
-    ? Array.from(
-        new Set(
-          data.flatMap(item => 
-            item.Data
-              .filter(d => d && typeof d.Anyo === 'number')
-              .map(d => d.Anyo)
-          )
-        )
-      ).sort((a, b) => b - a)
+  // Extract unique provincias from data
+  const provincias = data
+    ? Array.from(new Set(data.map(item => item.provincia))).sort()
     : [];
-    
-  // Set initial year when data is loaded
-  useEffect(() => {
-    if (years.length > 0 && !selectedYear) {
-      setSelectedYear(years[0]);
-    }
-  }, [years, selectedYear]);
 
-  const filteredData = data?.sort((a, b) => {
-    // Extraer números del inicio de la clasificación para ordenar correctamente
-    const numA = parseInt(a.clasificacion.match(/\d+/)?.[0] || "0");
-    const numB = parseInt(b.clasificacion.match(/\d+/)?.[0] || "0");
-    return numA - numB;
-  });
+  const filteredData = data?.filter(item => 
+    selectedProvincia === "todas" || item.provincia === selectedProvincia
+  );
 
   if (error) {
     return (
@@ -77,19 +59,20 @@ export function MunicipiosPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
-                Año
+                Provincia
               </label>
               <Select
-                value={selectedYear?.toString() || ''}
-                onValueChange={(year) => setSelectedYear(Number(year))}
+                value={selectedProvincia}
+                onValueChange={setSelectedProvincia}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar año" />
+                  <SelectValue placeholder="Seleccionar provincia" />
                 </SelectTrigger>
                 <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={String(year)}>
-                      {year}
+                  <SelectItem value="todas">Todas las provincias</SelectItem>
+                  {provincias.map((provincia) => (
+                    <SelectItem key={provincia} value={provincia}>
+                      {provincia}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -105,7 +88,7 @@ export function MunicipiosPage() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <MunicipiosDataTable data={filteredData || []} selectedYear={selectedYear} />
+          <MunicipiosDataTable data={filteredData || []} />
         )}
       </div>
     </div>

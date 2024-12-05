@@ -3,30 +3,30 @@ import { MunicipiosDataItem } from "../lib/api";
 
 interface MunicipiosDataTableProps {
   data: MunicipiosDataItem[];
-  selectedYear: number;
 }
 
-export function MunicipiosDataTable({ data, selectedYear }: MunicipiosDataTableProps) {
+export function MunicipiosDataTable({ data }: MunicipiosDataTableProps) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Clasificación</TableHead>
-          <TableHead className="text-right">Número de Municipios</TableHead>
+          <TableHead>Provincia</TableHead>
+          <TableHead>Número de Habitantes</TableHead>
+          <TableHead>Año</TableHead>
+          <TableHead className="text-right">Valor</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((item) => {
-          const yearData = item.Data.find((d) => d.Anyo === selectedYear);
-          const valor = yearData?.Valor || 0;
-
-          return (
-            <TableRow key={item.clasificacion}>
+        {data.flatMap((item) => 
+          item.Data.map((dataItem) => (
+            <TableRow key={`${item.provincia}-${dataItem.NombrePeriodo}`}>
+              <TableCell>{item.provincia}</TableCell>
               <TableCell>{item.clasificacion}</TableCell>
-              <TableCell className="text-right">{valor}</TableCell>
+              <TableCell>{dataItem.NombrePeriodo}</TableCell>
+              <TableCell className="text-right">{dataItem.Valor}</TableCell>
             </TableRow>
-          );
-        })}
+          ))
+        )}
       </TableBody>
     </Table>
   );
