@@ -39,6 +39,7 @@ export function Landing() {
               <SelectItem value="/tasas">Tasas de actividad, paro y empleo</SelectItem>
               <SelectItem value="/censo">Censo por provincias</SelectItem>
               <SelectItem value="/municipios">Municipios por habitante</SelectItem>
+              <SelectItem value="/natalidad">Tasa de natalidad</SelectItem>
             </SelectContent>
           </Select>
         </Card>
