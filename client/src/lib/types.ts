@@ -8,6 +8,8 @@ export interface DataPoint {
   Valor: number;
   Periodo: Periodo;
   Secreto: boolean;
+  Anyo: number;
+  NombrePeriodo: string;
 }
 
 export interface INEDataItem {

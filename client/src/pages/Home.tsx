@@ -10,11 +10,18 @@ import { AlertCircle } from "lucide-react";
 export function Home() {
   const [selectedGender, setSelectedGender] = useState<string>("Hombres");
   const [selectedIndicator, setSelectedIndicator] = useState<string>("Tasa de actividad");
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["ineData", selectedGender, selectedIndicator],
     queryFn: () => fetchINEData(),
   });
+
+  // Extract unique years from data
+  const years = data
+    ? [...new Set(data.flatMap(item => item.Data.map(d => d.Anyo)))]
+        .sort((a, b) => b - a)
+    : [];
+
+  const [selectedYear, setSelectedYear] = useState<number>(years[0] || 2023);
 
   const filteredData = data?.filter(
     (item) =>
@@ -43,8 +50,11 @@ export function Home() {
         <Filters
           selectedGender={selectedGender}
           selectedIndicator={selectedIndicator}
+          selectedYear={selectedYear}
+          years={years}
           onGenderChange={setSelectedGender}
           onIndicatorChange={setSelectedIndicator}
+          onYearChange={(year) => setSelectedYear(Number(year))}
         />
 
         {isLoading ? (
@@ -54,7 +64,7 @@ export function Home() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <DataTable data={filteredData || []} />
+          <DataTable data={filteredData || []} selectedYear={selectedYear} />
         )}
       </div>
     </div>

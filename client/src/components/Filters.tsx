@@ -10,19 +10,49 @@ import { Card } from "@/components/ui/card";
 interface FiltersProps {
   selectedGender: string;
   selectedIndicator: string;
+  selectedYear?: number;
+  years: number[];
   onGenderChange: (value: string) => void;
   onIndicatorChange: (value: string) => void;
+  onYearChange: (value: string) => void;
 }
 
 export function Filters({
   selectedGender,
   selectedIndicator,
+  selectedYear,
+  years,
   onGenderChange,
   onIndicatorChange,
+  onYearChange,
 }: FiltersProps) {
   return (
     <Card className="p-4">
       <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1">
+          <label className="text-sm font-medium mb-2 block">
+            Año
+          </label>
+          <Select 
+            value={selectedYear ? selectedYear.toString() : ''} 
+            onValueChange={onYearChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar año" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.length > 0 ? (
+                years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="2023">2023</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex-1">
           <label className="text-sm font-medium mb-2 block">
             Género

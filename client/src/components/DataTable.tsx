@@ -11,9 +11,10 @@ import type { INEDataItem } from "../lib/types";
 
 interface DataTableProps {
   data: INEDataItem[];
+  selectedYear?: number;
 }
 
-export function DataTable({ data }: DataTableProps) {
+export function DataTable({ data, selectedYear }: DataTableProps) {
   const allProcessedData = data.flatMap((item) => {
     // Extract province from item.Nombre
     const parts = item.Nombre.split(". ");
@@ -21,7 +22,7 @@ export function DataTable({ data }: DataTableProps) {
 
     // Process and map data points
     return item.Data
-      .filter(d => !d.Secreto) // Filter out secret records
+      .filter(d => !d.Secreto && (!selectedYear || d.Anyo === selectedYear)) // Filter out secret records and by year
       .map(d => {
         const year = d.Anyo;
         const quarterMatch = d.Periodo.Nombre_largo.match(/Trimestre (\d)/);
