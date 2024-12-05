@@ -25,8 +25,15 @@ export function MunicipiosPage() {
 
   // Extract unique years from data
   const years = data
-    ? Array.from(new Set(data.flatMap(item => item.Data.map(d => d.Anyo))))
-        .sort((a, b) => b - a)
+    ? Array.from(
+        new Set(
+          data.flatMap(item => 
+            item.Data
+              .filter(d => d && typeof d.Anyo === 'number')
+              .map(d => d.Anyo)
+          )
+        )
+      ).sort((a, b) => b - a)
     : [];
 
   const filteredData = data?.sort((a, b) => {
@@ -74,7 +81,7 @@ export function MunicipiosPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
+                    <SelectItem key={year} value={String(year)}>
                       {year}
                     </SelectItem>
                   ))}
