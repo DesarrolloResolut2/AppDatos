@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Landing } from "./pages/Landing";
 import { TasasPage } from "./pages/TasasPage";
 import { CensoPage } from "./pages/CensoPage";
+import { MunicipiosPage } from "./pages/MunicipiosPage";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/tasas" component={TasasPage} />
       <Route path="/censo" component={CensoPage} />
+      <Route path="/municipios" component={MunicipiosPage} />
       <Route>404 - Página no encontrada</Route>
     </Switch>
   );
