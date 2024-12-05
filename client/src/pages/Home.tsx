@@ -10,6 +10,7 @@ import { AlertCircle } from "lucide-react";
 export function Home() {
   const [selectedGender, setSelectedGender] = useState<string>("Hombres");
   const [selectedIndicator, setSelectedIndicator] = useState<string>("Tasa de actividad");
+  const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
   const { data, isLoading, error } = useQuery({
     queryKey: ["ineData", selectedGender, selectedIndicator],
     queryFn: () => fetchINEData(),
@@ -23,10 +24,23 @@ export function Home() {
 
   const [selectedYear, setSelectedYear] = useState<number>(years[0] || 2023);
 
+  // Extract unique provincias from data
+  const provincias = data
+    ? [...new Set(data.map(item => {
+        const parts = item.Nombre.split(". ");
+        return parts.length > 2 ? parts[2] : null;
+      }).filter(Boolean))]
+        .sort()
+    : [];
+
   const filteredData = data?.filter(
-    (item) =>
-      item.Nombre.includes(selectedGender) &&
-      item.Nombre.includes(selectedIndicator)
+    (item) => {
+      const parts = item.Nombre.split(". ");
+      const provincia = parts.length > 2 ? parts[2] : "";
+      return item.Nombre.includes(selectedGender) &&
+             item.Nombre.includes(selectedIndicator) &&
+             (selectedProvincia === "todas" || provincia === selectedProvincia);
+    }
   );
 
   if (error) {
@@ -51,10 +65,13 @@ export function Home() {
           selectedGender={selectedGender}
           selectedIndicator={selectedIndicator}
           selectedYear={selectedYear}
+          selectedProvincia={selectedProvincia}
           years={years}
+          provincias={provincias}
           onGenderChange={setSelectedGender}
           onIndicatorChange={setSelectedIndicator}
           onYearChange={(year) => setSelectedYear(Number(year))}
+          onProvinciaChange={setSelectedProvincia}
         />
 
         {isLoading ? (
