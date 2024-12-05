@@ -1,0 +1,99 @@
+Guía para añadir la categoría "Tasa de Mortalidad" a tu aplicación
+1. Objetivo de la nueva categoría
+El objetivo de esta nueva categoría es mostrar la tasa de mortalidad de las provincias de España, comenzando con la provincia de León como ejemplo. La información se extraerá de una API que proporciona la tasa de mortalidad anual por cada mil habitantes, y se mostrará en una tabla organizada por año.
+
+2. URL de la API
+La información sobre la tasa de mortalidad se obtiene de la siguiente API:
+
+ruby
+Copiar código
+https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1482?nult=4&det=2
+3. Comprensión de la estructura de la API
+La API devuelve una respuesta en formato JSON que contiene varios campos relevantes. Aquí se detalla cómo entender la estructura de la API:
+
+Nombre:
+
+Este campo contiene el nombre del conjunto de datos, que en este caso es "Mortalidad. León.".
+Aunque el ejemplo muestra "León", debes tener en cuenta que la misma estructura de la API se aplica a todas las provincias. Así que, cuando implementes esta categoría en tu aplicación, el valor de "Nombre" cambiará dependiendo de la provincia, pero siempre seguirá el formato "Mortalidad. [Provincia]".
+Unidad:
+
+El campo "Unidad" contiene la unidad de medida de la tasa de mortalidad. Dentro de este campo, el subcampo Nombre especifica que la unidad es "Defunciones por mil habitantes". Este dato es importante para entender cómo se están midiendo los valores en la tabla.
+Data:
+
+La clave más importante es el campo "Data", que es un array que contiene los datos históricos para cada año. Cada objeto dentro de Data tiene:
+Anyo: Representa el año del dato (por ejemplo, 2023, 2022, etc.).
+Valor: El valor de la tasa de mortalidad para ese año, expresado en "defunciones por mil habitantes" (por ejemplo, 13.12).
+Secreto: Indica si el dato es confidencial (en este caso siempre es false, por lo que los datos están disponibles).
+Ejemplo de un objeto de la API:
+
+json
+Copiar código
+{
+  "Nombre": "Mortalidad. León.",
+  "Unidad": {
+    "Nombre": "Defunciones por mil habitantes"
+  },
+  "Data": [
+    {
+      "Anyo": 2023,
+      "Valor": 13.12,
+      "Secreto": false
+    },
+    {
+      "Anyo": 2022,
+      "Valor": 14.82,
+      "Secreto": false
+    },
+    {
+      "Anyo": 2021,
+      "Valor": 13.8,
+      "Secreto": false
+    },
+    {
+      "Anyo": 2020,
+      "Valor": 16.82,
+      "Secreto": false
+    }
+  ]
+}
+4. Datos que se mostrarán en la tabla
+La tabla de tu aplicación mostrará los siguientes datos:
+
+Provincia: El nombre de la provincia (en el ejemplo se muestra "León", pero la aplicación debe manejarlo dinámicamente para cualquier provincia).
+Años disponibles: Extraídos del campo Anyo dentro de Data (por ejemplo, 2023, 2022, etc.).
+Tasa de Mortalidad: Extraída del campo Valor, que es el número de defunciones por mil habitantes para cada año.
+La tabla tendrá el siguiente formato conceptual:
+
+Provincia	Año	Tasa de Mortalidad (por mil habitantes)
+León	2023	13.12
+León	2022	14.82
+León	2021	13.80
+León	2020	16.82
+5. Pasos para implementar esta categoría en React
+Realizar la solicitud a la API:
+
+Configura tu aplicación para hacer una solicitud HTTP a la URL de la API proporcionada.
+Asegúrate de manejar correctamente los posibles errores, como una respuesta vacía o la falta de conexión.
+Interpretar la estructura de la API:
+
+Al recibir los datos, extrae la información del campo Nombre para identificar la provincia (en el ejemplo, "León").
+Extrae el array de datos de la clave Data, donde podrás acceder a los valores de Anyo (el año) y Valor (la tasa de mortalidad).
+Verifica que el campo Secreto sea false antes de utilizar los valores de Valor.
+Organizar los datos para la tabla:
+
+Para cada entrada en el array Data, genera un objeto que asocie el año (Anyo), el valor de la tasa de mortalidad (Valor), y la provincia correspondiente.
+Es importante manejar dinámicamente la provincia, ya que la API puede devolver datos para diferentes provincias.
+Renderizar la tabla:
+
+Diseña la tabla para que sea fácil de leer y responsiva, mostrando claramente los tres campos: Provincia, Año, y Tasa de Mortalidad (por mil habitantes).
+Cada fila debe contener la información correspondiente a un año y su tasa de mortalidad.
+6. Consideraciones adicionales
+Formato de los valores:
+
+Asegúrate de que los valores de la tasa de mortalidad (campo Valor) se muestren con dos decimales para mantener la precisión y claridad.
+Manejo de errores:
+
+Si la API no responde correctamente o si hay problemas con los datos, proporciona un mensaje de error o una pantalla de carga que informe al usuario.
+Estilo y visualización:
+
+Asegúrate de que la tabla se vea bien y sea intuitiva. Utiliza un formato consistente para las columnas y considera utilizar herramientas de paginación si hay muchos datos.
