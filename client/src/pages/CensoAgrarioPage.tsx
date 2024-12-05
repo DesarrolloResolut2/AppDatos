@@ -40,7 +40,7 @@ export function CensoAgrarioPage() {
         provincia = partes[partes.length - 1].trim();
       }
 
-      const partesSeparadas = nombreCompleto.split(",").map(p => p.trim());
+      const partesSeparadas = nombreCompleto.split(",").map((p: string) => p.trim());
       if (partesSeparadas.length > 1) {
         superficie = partesSeparadas[1];
         if (partesSeparadas.length > 2) {
