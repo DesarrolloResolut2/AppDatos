@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { CensoDataTable } from "../components/CensoDataTable";
 import { fetchCensoData } from "../lib/api";
@@ -66,9 +67,14 @@ export function CensoPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">
-        Censo por {selectedTipo === 'provincia' ? 'Provincias' : 'Municipios'}
-      </h1>
+      <div className="flex items-center justify-between mb-8">
+        <Link href="/" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+          Volver a inicio
+        </Link>
+        <h1 className="text-3xl font-bold text-center flex-1">
+          Censo por {selectedTipo === 'provincia' ? 'Provincias' : 'Municipios'}
+        </h1>
+      </div>
 
       <div className="space-y-6">
         <Card className="p-4">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { DataTable } from "../components/DataTable";
 import { Filters } from "../components/Filters";
@@ -56,9 +57,14 @@ export function TasasPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">
-        Tasas de Actividad, Paro y Empleo
-      </h1>
+      <div className="flex items-center justify-between mb-8">
+        <Link href="/" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+          Volver a inicio
+        </Link>
+        <h1 className="text-3xl font-bold text-center flex-1">
+          Tasas de Actividad, Paro y Empleo
+        </h1>
+      </div>
 
       <div className="space-y-6">
         <Filters
