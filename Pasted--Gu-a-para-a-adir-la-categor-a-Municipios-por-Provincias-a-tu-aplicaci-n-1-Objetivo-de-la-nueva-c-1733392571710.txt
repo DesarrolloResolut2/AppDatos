@@ -1,0 +1,95 @@
+
+Guía para añadir la categoría "Municipios por Provincias" a tu aplicación
+1. Objetivo de la nueva categoría
+El objetivo de esta funcionalidad es integrar una nueva categoría en tu aplicación React que muestre información sobre los municipios de la provincia de León, clasificados por rangos de habitantes. Los datos estarán organizados en una tabla y permitirán visualizar de manera clara:
+
+Clasificación de municipios: Rango por número de habitantes (por ejemplo, "Menos de 101 habitantes", "De 501 a 1.000", etc.).
+Años disponibles: Fechas para las cuales se tienen datos (ejemplo: 2023, 2022, 2021).
+Valores asociados: Número de municipios que corresponden a cada rango de habitantes en cada año.
+2. URL de la API
+Los datos provienen de la siguiente API:
+
+ruby
+Copiar código
+https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/61399?nult=4&det=2
+3. Comprensión de la estructura de la API
+La respuesta de la API es un conjunto de objetos JSON, donde cada objeto tiene dos campos principales:
+
+Nombre:
+
+Contiene información en formato texto que combina el código de la provincia (por ejemplo, 24) y su nombre (León), junto con una descripción de la clasificación por número de habitantes (por ejemplo, "Menos de 101 habitantes").
+Ejemplo de un valor en este campo: "24 León, Menos de 101 habitantes".
+Data:
+
+Es un array que proporciona los datos históricos para la clasificación del municipio. Cada elemento dentro de Data tiene:
+NombrePeriodo: El año del dato (por ejemplo, 2023, 2022, 2021).
+Valor: El número asociado al dato de ese año (por ejemplo, 211).
+Secreto: Indica si el dato es confidencial (normalmente false y no se utiliza en este caso).
+Ejemplo de un objeto JSON completo de la API:
+
+json
+Copiar código
+{
+  "Nombre": "24 León, Menos de 101 habitantes",
+  "Data": [
+    { "NombrePeriodo": "2023", "Valor": 5, "Secreto": false },
+    { "NombrePeriodo": "2022", "Valor": 6, "Secreto": false },
+    { "NombrePeriodo": "2021", "Valor": 7, "Secreto": false }
+  ]
+}
+4. Cómo interpretar y procesar los datos de la API
+Para utilizar esta información en tu aplicación, sigue estos pasos conceptuales:
+
+Clasificación por número de habitantes:
+
+Dentro del campo Nombre, identifica la parte que describe el rango de habitantes (por ejemplo, "Menos de 101 habitantes").
+Esta clasificación será utilizada como encabezado o categoría principal en la tabla.
+Extracción del año y valor:
+
+En el campo Data, extrae los valores de NombrePeriodo (año) y Valor (número correspondiente a esa clasificación en ese año).
+Cada año se mostrará como una columna en la tabla, y el valor correspondiente como su celda.
+Organización de los datos:
+
+Cada clasificación (Nombre) agrupa los datos históricos (Data).
+Para cada clasificación, tendrás una fila en la tabla que mostrará los años como encabezados de columna y los valores como celdas correspondientes.
+Ejemplo conceptual de la estructura que se mostrará:
+
+Clasificación	2023	2022	2021
+Menos de 101 habitantes	5	6	7
+De 501 a 1.000 habitantes	47	50	48
+De 2.001 a 5.000 habitantes	20	20	20
+5. Visualización en la tabla
+Para mostrar los datos en la tabla de la aplicación:
+
+Encabezados de la tabla:
+
+Los encabezados de la tabla incluirán:
+Una columna para las clasificaciones (Clasificación).
+Varias columnas para los años disponibles (2023, 2022, etc.).
+Cuerpo de la tabla:
+
+Cada fila representará una clasificación por número de habitantes.
+Las celdas de cada fila mostrarán los valores asociados a cada año.
+6. Pasos para implementar en la aplicación
+Realiza la llamada a la API:
+
+Configura la solicitud para obtener los datos de la URL proporcionada.
+Asegúrate de manejar los errores en caso de que la API no esté disponible.
+Procesa los datos obtenidos:
+
+Extrae las clasificaciones desde el campo Nombre y organiza los datos históricos (Data) para estructurarlos en un formato adecuado para la tabla.
+Organiza los datos para la tabla:
+
+Agrupa las clasificaciones y sus valores por años.
+Genera una estructura legible que puedas mapear directamente en una tabla.
+Renderiza los datos en la tabla:
+
+Diseña la tabla para que sea clara y responsiva.
+Asegúrate de que las clasificaciones y los años se muestren correctamente, y que los valores estén en las celdas correspondientes.
+7. Revisión y validación
+Verifica que la tabla muestra correctamente los datos de la API.
+Asegúrate de que:
+Todas las clasificaciones están presentes.
+Los años corresponden a las columnas.
+Los valores son precisos según los datos de la API.
+Prueba cómo se comporta la tabla con distintos tamaños de pantalla y ajusta el diseño si es necesario.
