@@ -22,10 +22,11 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
       const nombreLimpio = nombrePartes[0];
       const tipo = nombrePartes[1] === "Total" ? "provincia" : "municipio";
       
+      // Extraer el género del nombre completo
       let genero = 'Total';
-      if (nombrePartes.includes('Hombres')) {
+      if (item.Nombre.includes('Hombres')) {
         genero = 'Hombres';
-      } else if (nombrePartes.includes('Mujeres')) {
+      } else if (item.Nombre.includes('Mujeres')) {
         genero = 'Mujeres';
       }
       

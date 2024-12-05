@@ -40,9 +40,16 @@ export function CensoPage() {
     : [];
 
   const filteredData = data?.filter(item => {
+    // Filtrar por tipo (provincia o municipio)
     const tipoMatch = item.tipo === selectedTipo;
+    
+    // Filtrar por provincia específica o mostrar todas
     const provinciaMatch = selectedProvincia === "todas" || item.nombreLimpio === selectedProvincia;
+    
+    // Filtrar por género, permitiendo ver el total o un género específico
     const generoMatch = selectedGenero === "Total" || item.genero === selectedGenero;
+    
+    // Todos los filtros deben coincidir
     return tipoMatch && provinciaMatch && generoMatch;
   });
 
