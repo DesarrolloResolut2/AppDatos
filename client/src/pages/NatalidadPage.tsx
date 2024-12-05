@@ -23,6 +23,8 @@ export function NatalidadPage() {
     }[];
   }
 
+  const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
+
   const { data, isLoading, error } = useQuery<{ provincia: string; year: number; valor: number }[]>({
     queryKey: ["natalidadData"],
     queryFn: async () => {
@@ -33,11 +35,15 @@ export function NatalidadPage() {
       const jsonData: INENatalidadResponse = await response.json();
       return jsonData.Data
         .filter(item => !item.Secreto)
-        .map(item => ({
-          provincia: "León",
-          year: item.Anyo,
-          valor: item.Valor
-        }));
+        .map(item => {
+          const parts = jsonData.Nombre.split(". ");
+          const provincia = parts.length > 1 ? parts[1].replace(".", "") : "Desconocida";
+          return {
+            provincia,
+            year: item.Anyo,
+            valor: item.Valor
+          };
+        });
     },
   });
 
@@ -67,13 +73,34 @@ export function NatalidadPage() {
           Volver a inicio
         </Link>
         <h1 className="text-3xl font-bold text-center flex-1">
-          Tasa de Natalidad - León
+          Tasa de Natalidad por Provincias
         </h1>
       </div>
 
       <div className="space-y-6">
         <Card className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-2 block">
+                Provincia
+              </label>
+              <Select
+                value={selectedProvincia}
+                onValueChange={setSelectedProvincia}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar provincia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas las provincias</SelectItem>
+                  {Array.from(new Set(data?.map(item => item.provincia) || [])).sort().map((provincia) => (
+                    <SelectItem key={provincia} value={provincia}>
+                      {provincia}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
                 Año
@@ -104,7 +131,10 @@ export function NatalidadPage() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <NatalidadDataTable data={data || []} selectedYear={selectedYear} />
+          <NatalidadDataTable 
+            data={data?.filter(item => selectedProvincia === "todas" || item.provincia === selectedProvincia) || []} 
+            selectedYear={selectedYear}
+          />
         )}
       </div>
     </div>
