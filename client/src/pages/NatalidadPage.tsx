@@ -26,7 +26,10 @@ export function NatalidadPage() {
   const { data, isLoading, error } = useQuery<{ provincia: string; year: number; valor: number }[]>({
     queryKey: ["natalidadData"],
     queryFn: async () => {
-      const response = await fetch("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1470?nult=4&det=2");
+      const response = await fetch("/api/natalidad-data");
+      if (!response.ok) {
+        throw new Error('Error al obtener datos de natalidad');
+      }
       const jsonData: INENatalidadResponse = await response.json();
       return jsonData.Data
         .filter(item => !item.Secreto)
