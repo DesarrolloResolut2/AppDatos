@@ -15,8 +15,6 @@ import {
 import { Card } from "@/components/ui/card";
 
 export function CensoAgrarioPage() {
-  const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["censoAgrarioData"],
     queryFn: async () => {
@@ -110,32 +108,6 @@ export function CensoAgrarioPage() {
       </div>
 
       <div className="space-y-6">
-        <Card className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">
-                Provincia
-              </label>
-              <Select
-                value={selectedProvincia}
-                onValueChange={setSelectedProvincia}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar provincia" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas las provincias</SelectItem>
-                  {Array.from(new Set(data?.filter(item => !item.esNacional).map(item => item.provincia) || [])).sort().map((provincia) => (
-                    <SelectItem key={provincia} value={provincia}>
-                      {provincia}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </Card>
-
         {isLoading ? (
           <div className="space-y-4">
             <Skeleton className="h-12 w-full" />
@@ -143,9 +115,7 @@ export function CensoAgrarioPage() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : (
-          <CensoAgrarioDataTable 
-            data={data?.filter(item => selectedProvincia === "todas" || item.provincia === selectedProvincia) || []} 
-          />
+          <CensoAgrarioDataTable data={data || []} />
         )}
       </div>
     </div>
