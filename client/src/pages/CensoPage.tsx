@@ -28,7 +28,7 @@ export function CensoPage() {
 
   // Extract unique years from data
   const years = data
-    ? Array.from(new Set(data.flatMap(item => item.Data.map(d => d.Anyo))))
+    ? Array.from(new Set(data.flatMap(item => item.Data.map((d: DataPoint) => d.Anyo))))
         .sort((a, b) => b - a)
     : [];
 

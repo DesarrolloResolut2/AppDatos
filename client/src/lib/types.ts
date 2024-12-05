@@ -22,6 +22,7 @@ export interface CensoDataItem extends INEDataItem {
   tipo: 'provincia' | 'municipio';
   nombreLimpio: string;
   genero: 'Hombres' | 'Mujeres' | 'Total';
+  Data: DataPoint[];
 }
 
 export interface PIBDataItem extends INEDataItem {

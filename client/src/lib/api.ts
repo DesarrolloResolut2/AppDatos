@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { INEDataItem } from "./types";
+import type { INEDataItem, CensoDataItem, DataPoint } from "./types";
 
 const TASAS_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3996?nult=4&det=2";
 const CENSO_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/2877?nult=4&det=2";
@@ -26,7 +26,7 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
       const tipo = nombrePartes[1] === "Total" ? "provincia" : "municipio";
       
       // Extraer el género del nombre completo
-      let genero = 'Total';
+      let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
       if (item.Nombre.includes('Hombres')) {
         genero = 'Hombres';
       } else if (item.Nombre.includes('Mujeres')) {

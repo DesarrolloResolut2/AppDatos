@@ -29,8 +29,8 @@ export function TasasPage() {
   const provincias = data
     ? Array.from(new Set(data.map(item => {
         const parts = item.Nombre.split(". ");
-        return parts.length > 2 ? parts[2] : null;
-      }).filter(Boolean)))
+        return parts.length > 2 ? parts[2] : "";
+      }).filter(provincia => provincia !== "")))
         .sort()
     : [];
 
