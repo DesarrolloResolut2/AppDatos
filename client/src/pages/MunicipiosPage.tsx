@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { MunicipiosDataTable } from "../components/MunicipiosDataTable";
@@ -37,7 +37,7 @@ export function MunicipiosPage() {
     : [];
     
   // Set initial year when data is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (years.length > 0 && !selectedYear) {
       setSelectedYear(years[0]);
     }
