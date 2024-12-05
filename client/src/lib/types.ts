@@ -23,3 +23,9 @@ export interface CensoDataItem extends INEDataItem {
   nombreLimpio: string;
   genero: 'Hombres' | 'Mujeres' | 'Total';
 }
+
+export interface PIBDataItem extends INEDataItem {
+  provincia: string;
+  categoria: string;
+  tipo: 'general' | 'industria';
+}

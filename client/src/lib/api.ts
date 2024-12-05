@@ -6,6 +6,7 @@ const CENSO_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/
 const MUNICIPIOS_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/61399?nult=4&det=2";
 const MORTALIDAD_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1482?nult=4&det=2";
 
+const PIB_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/67284?nult=4&det=2";
 export async function fetchINEData(): Promise<INEDataItem[]> {
   try {
     const response = await axios.get<INEDataItem[]>(TASAS_API_URL);
@@ -92,5 +93,32 @@ export async function fetchMunicipiosData(): Promise<MunicipiosDataItem[]> {
   } catch (error) {
     console.error("Error fetching municipios data:", error);
     throw new Error("Error al obtener datos de municipios");
+  }
+}
+export interface PIBDataItem extends INEDataItem {
+  provincia: string;
+  categoria: string;
+  tipo: 'general' | 'industria';
+}
+
+export async function fetchPIBData(): Promise<PIBDataItem[]> {
+  try {
+    const response = await axios.get<INEDataItem[]>(PIB_API_URL);
+    return response.data.map(item => {
+      const parts = item.Nombre.split(", ");
+      const provincia = parts[0];
+      const categoria = parts[1];
+      const tipo = categoria.startsWith("PRODUCTO INTERIOR BRUTO") ? 'general' : 'industria';
+      
+      return {
+        ...item,
+        provincia,
+        categoria,
+        tipo
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching PIB data:", error);
+    throw new Error("Error al obtener datos del PIB");
   }
 }
