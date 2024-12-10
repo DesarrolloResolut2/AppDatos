@@ -128,7 +128,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/pdf-documents/:id", async (req: Request, res: Response) => {
+  app.get("/api/pdf-documents/:id/content", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -141,18 +141,24 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "PDF no encontrado" });
       }
 
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="${document[0].fileName}"`);
-      res.setHeader('Accept-Ranges', 'bytes');
-      res.setHeader('Cache-Control', 'public, max-age=0');
-      // Convertir el contenido hexadecimal de nuevo a Buffer
+      // Convertir el contenido hexadecimal a Buffer
       const hexString = document[0].fileContent;
       const buffer = Buffer.from(hexString.slice(2), 'hex');
-      res.send(buffer);
+
+      // Extraer el texto del PDF
+      const pdf = require('pdf-parse');
+      const data = await pdf(buffer);
+      
+      res.json({
+        fileName: document[0].fileName,
+        text: data.text,
+        numPages: data.numpages,
+        info: data.info
+      });
     } catch (error) {
-      console.error("Error al obtener PDF:", error);
+      console.error("Error al obtener contenido del PDF:", error);
       res.status(500).json({ 
-        error: "Error al obtener el PDF",
+        error: "Error al extraer el contenido del PDF",
         details: error instanceof Error ? error.message : "Error desconocido"
       });
     }

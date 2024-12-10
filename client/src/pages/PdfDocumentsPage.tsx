@@ -5,10 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, FileText, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Document, Page } from 'react-pdf';
-import { pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
 import {
   Table,
   TableBody,
@@ -17,6 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  ScrollArea,
+  ScrollBar,
+} from "@/components/ui/scroll-area";
 
 interface PdfDocument {
   id: number;
@@ -25,16 +25,19 @@ interface PdfDocument {
   uploadedAt: string;
 }
 
-// Configurar worker de PDF.js
-const workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+interface PdfContent {
+  fileName: string;
+  text: string;
+  numPages: number;
+  info: any;
+}
 
 export function PdfDocumentsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPdf, setSelectedPdf] = useState<number | null>(null);
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const [pdfContent, setPdfContent] = useState<PdfContent | null>(null);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: documents, isLoading } = useQuery<PdfDocument[]>({
@@ -91,21 +94,22 @@ export function PdfDocumentsPage() {
     }
   };
 
-  const handleView = (id: number) => {
-    setSelectedPdf(id);
-    setPageNumber(1);
-  };
-
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-  };
-
-  const handlePrevPage = () => {
-    setPageNumber(page => Math.max(1, page - 1));
-  };
-
-  const handleNextPage = () => {
-    setPageNumber(page => numPages ? Math.min(numPages, page + 1) : page);
+  const handleView = async (id: number) => {
+    try {
+      setIsLoadingContent(true);
+      setSelectedPdf(id);
+      const response = await fetch(`/api/pdf-documents/${id}/content`);
+      if (!response.ok) {
+        throw new Error('Error al obtener el contenido del PDF');
+      }
+      const content = await response.json();
+      setPdfContent(content);
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Error al cargar el contenido del PDF');
+    } finally {
+      setIsLoadingContent(false);
+    }
   };
 
   return (
@@ -197,77 +201,41 @@ export function PdfDocumentsPage() {
           <Card className="p-6 mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Vista previa del PDF</h3>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePrevPage}
-                      disabled={pageNumber <= 1}
-                    >
-                      Anterior
-                    </Button>
-                    <span className="text-sm">
-                      Página {pageNumber} de {numPages || '?'}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNextPage}
-                      disabled={numPages !== null && pageNumber >= numPages}
-                    >
-                      Siguiente
-                    </Button>
+                <h3 className="text-lg font-semibold">
+                  Contenido del PDF: {pdfContent?.fileName}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedPdf(null);
+                    setPdfContent(null);
+                  }}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Cerrar
+                </Button>
+              </div>
+
+              {isLoadingContent ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : pdfContent ? (
+                <ScrollArea className="h-[500px] w-full rounded-md border p-4">
+                  <div className="whitespace-pre-wrap font-mono text-sm">
+                    {pdfContent.text}
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedPdf(null)}
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Cerrar
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="flex justify-center">
-                <div style={{ maxWidth: '100%', overflow: 'auto' }}>
-                  <Document
-                    file={`/api/pdf-documents/${selectedPdf}`}
-                    onLoadSuccess={onDocumentLoadSuccess}
-                    onLoadError={(error) => {
-                      console.error('Error loading PDF:', error);
-                      setError('Error al cargar el PDF. Por favor, inténtelo de nuevo.');
-                    }}
-                    error={
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                          Error al cargar el PDF. Por favor, inténtelo de nuevo.
-                        </AlertDescription>
-                      </Alert>
-                    }
-                    loading={
-                      <div className="flex items-center justify-center p-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      </div>
-                    }
-                  >
-                    <Page
-                      key={`page_${pageNumber}`}
-                      pageNumber={pageNumber}
-                      renderTextLayer={true}
-                      renderAnnotationLayer={true}
-                      scale={1.2}
-                      onLoadError={(error) => {
-                        console.error('Error loading page:', error);
-                        setError('Error al cargar la página del PDF.');
-                      }}
-                    />
-                  </Document>
-                </div>
-              </div>
+                  <ScrollBar orientation="vertical" />
+                </ScrollArea>
+              ) : (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Error al cargar el contenido del PDF
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
           </Card>
         )}
