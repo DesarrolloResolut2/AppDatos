@@ -48,11 +48,30 @@ export function registerRoutes(app: Express) {
     try {
       const { data, fileName = "imported-file", sheetName = "Sheet1" } = req.body;
 
+      if (!data) {
+        return res.status(400).json({ error: "No se recibieron datos para importar" });
+      }
+
       if (!Array.isArray(data)) {
         return res.status(400).json({ error: "Los datos deben ser un array" });
       }
 
-      // Insertar datos en la base de datos
+      if (data.length === 0) {
+        return res.status(400).json({ error: "El archivo Excel está vacío" });
+      }
+
+      // Validar que los datos sean JSON válido
+      try {
+        // Asegurarse de que los datos son serializables
+        JSON.parse(JSON.stringify(data));
+      } catch (e) {
+        return res.status(400).json({ 
+          error: "Los datos no son válidos para JSON",
+          details: e instanceof Error ? e.message : "Error al validar JSON"
+        });
+      }
+
+      // Intentar insertar en la base de datos
       const result = await db.insert(importedData).values({
         fileName,
         sheetName,
@@ -66,9 +85,22 @@ export function registerRoutes(app: Express) {
       });
     } catch (error) {
       console.error("Error al importar datos:", error);
+      
+      // Mejorar los mensajes de error
+      let errorMessage = "Error al procesar el archivo Excel";
+      let errorDetails = error instanceof Error ? error.message : "Error desconocido";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("duplicate key")) {
+          errorMessage = "Este archivo ya ha sido importado";
+        } else if (error.message.includes("invalid input syntax")) {
+          errorMessage = "El formato de los datos no es válido";
+        }
+      }
+      
       res.status(500).json({ 
-        error: "Error al procesar los datos del archivo Excel",
-        details: error instanceof Error ? error.message : "Error desconocido"
+        error: errorMessage,
+        details: errorDetails
       });
     }
   });

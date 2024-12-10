@@ -39,13 +39,17 @@ export function ImportExcelPage() {
           });
 
           if (!response.ok) {
-            throw new Error('Error al importar los datos');
+            const errorData = await response.json();
+            throw new Error(errorData.error || errorData.details || 'Error al importar los datos');
           }
 
-          // Limpiar el error después de una importación exitosa
+          // Mostrar mensaje de éxito y limpiar el error
           setError(null);
+          alert('Archivo importado correctamente');
         } catch (err) {
-          setError('Error al procesar el archivo: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+          const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+          console.error('Error detallado:', err);
+          setError('Error al procesar el archivo: ' + errorMessage);
         }
       };
       reader.onerror = () => {
