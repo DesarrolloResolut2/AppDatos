@@ -3,8 +3,11 @@ import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, FileText, Trash2 } from "lucide-react";
+import { AlertCircle, FileText, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import {
   Table,
   TableBody,
@@ -21,9 +24,15 @@ interface PdfDocument {
   uploadedAt: string;
 }
 
+// Configurar worker de PDF.js
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
 export function PdfDocumentsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPdf, setSelectedPdf] = useState<number | null>(null);
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
   const queryClient = useQueryClient();
 
   const { data: documents, isLoading } = useQuery<PdfDocument[]>({
@@ -81,7 +90,20 @@ export function PdfDocumentsPage() {
   };
 
   const handleView = (id: number) => {
-    window.open(`/api/pdf-documents/${id}`, '_blank');
+    setSelectedPdf(id);
+    setPageNumber(1);
+  };
+
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+  };
+
+  const handlePrevPage = () => {
+    setPageNumber(page => Math.max(1, page - 1));
+  };
+
+  const handleNextPage = () => {
+    setPageNumber(page => numPages ? Math.min(numPages, page + 1) : page);
   };
 
   return (
@@ -168,6 +190,76 @@ export function PdfDocumentsPage() {
             </Table>
           )}
         </Card>
+
+        {selectedPdf && (
+          <Card className="p-6 mt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Vista previa del PDF</h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrevPage}
+                      disabled={pageNumber <= 1}
+                    >
+                      Anterior
+                    </Button>
+                    <span className="text-sm">
+                      Página {pageNumber} de {numPages || '?'}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleNextPage}
+                      disabled={numPages !== null && pageNumber >= numPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedPdf(null)}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cerrar
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex justify-center">
+                <div style={{ maxWidth: '100%', overflow: 'auto' }}>
+                  <Document
+                    file={`/api/pdf-documents/${selectedPdf}`}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    error={
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Error al cargar el PDF. Por favor, inténtelo de nuevo.
+                        </AlertDescription>
+                      </Alert>
+                    }
+                    loading={
+                      <div className="flex items-center justify-center p-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    }
+                  >
+                    <Page
+                      pageNumber={pageNumber}
+                      renderTextLayer={true}
+                      renderAnnotationLayer={true}
+                      scale={1.2}
+                    />
+                  </Document>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );
