@@ -14,6 +14,8 @@ import { MortalidadPage } from "./pages/MortalidadPage";
 import { PIBPage } from "./pages/PIBPage";
 import { ImportExcelPage } from "./pages/ImportExcelPage";
 import { ImportedDataPage } from "./pages/ImportedDataPage";
+import { UploadPdfPage } from "./pages/UploadPdfPage";
+import { PdfDocumentsPage } from "./pages/PdfDocumentsPage";
 
 function Router() {
   return (
@@ -27,6 +29,8 @@ function Router() {
       <Route path="/pib" component={PIBPage} />
       <Route path="/importar" component={ImportExcelPage} />
       <Route path="/importados" component={ImportedDataPage} />
+      <Route path="/upload-pdf" component={UploadPdfPage} />
+      <Route path="/pdf-documents" component={PdfDocumentsPage} />
       <Route>404 - Página no encontrada</Route>
     </Switch>
   );

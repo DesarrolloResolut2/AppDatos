@@ -44,6 +44,8 @@ export function Landing() {
               <SelectItem value="/pib">Tasa P.I.B a precios de mercado</SelectItem>
               <SelectItem value="/importar">Importar datos Excel</SelectItem>
               <SelectItem value="/importados">Ver archivos importados</SelectItem>
+              <SelectItem value="/upload-pdf">Subir documento PDF</SelectItem>
+              <SelectItem value="/pdf-documents">Ver documentos PDF</SelectItem>
             </SelectContent>
           </Select>
         </Card>

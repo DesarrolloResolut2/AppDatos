@@ -1,83 +1,31 @@
-import type { Express, Request, Response } from "express";
+import { type Express, type Request, type Response } from "express";
 import { eq } from "drizzle-orm";
 import axios from "axios";
 import { db } from "../db";
-import { importedData } from "../db/schema";
+import { importedData, pdfDocuments } from "../db/schema";
 
 export function registerRoutes(app: Express) {
   // Add CORS headers
   app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
   });
 
-  app.get("/api/ine-data", async (req, res) => {
-    try {
-      const response = await axios.get(
-        "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3996?nult=4&det=2"
-      );
-      res.json(response.data);
-    } catch (error) {
-      res.status(500).json({ error: "Error al obtener datos del INE" });
-    }
-  });
-
-
-  app.get("/api/mortalidad-data", async (req, res) => {
-    try {
-      const response = await axios.get(
-        "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1482?nult=4&det=2"
-      );
-      res.json(response.data);
-    } catch (error) {
-      res.status(500).json({ error: "Error al obtener datos de mortalidad del INE" });
-    }
-  });
-  app.get("/api/natalidad-data", async (req, res) => {
-    try {
-      const response = await axios.get(
-        "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1470?nult=4&det=2"
-      );
-      res.json(response.data);
-    } catch (error) {
-      res.status(500).json({ error: "Error al obtener datos de natalidad del INE" });
-    }
-  });
-
+  // Excel Import Routes
   app.post("/api/import-excel", async (req: Request, res: Response) => {
     try {
-      const { data, fileName = "imported-file", sheetName = "Sheet1" } = req.body;
+      const { data, fileName, sheetName } = req.body;
 
-      if (!data) {
-        return res.status(400).json({ error: "No se recibieron datos para importar" });
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return res.status(400).json({ error: "Datos inválidos" });
       }
 
-      if (!Array.isArray(data)) {
-        return res.status(400).json({ error: "Los datos deben ser un array" });
-      }
-
-      if (data.length === 0) {
-        return res.status(400).json({ error: "El archivo Excel está vacío" });
-      }
-
-      // Validar que los datos sean JSON válido
-      try {
-        // Asegurarse de que los datos son serializables
-        JSON.parse(JSON.stringify(data));
-      } catch (e) {
-        return res.status(400).json({ 
-          error: "Los datos no son válidos para JSON",
-          details: e instanceof Error ? e.message : "Error al validar JSON"
-        });
-      }
-
-      // Intentar insertar en la base de datos
       const result = await db.insert(importedData).values({
         fileName,
         sheetName,
         data,
-        importedAt: new Date(),
       }).returning();
 
       res.json({ 
@@ -86,22 +34,9 @@ export function registerRoutes(app: Express) {
       });
     } catch (error) {
       console.error("Error al importar datos:", error);
-      
-      // Mejorar los mensajes de error
-      let errorMessage = "Error al procesar el archivo Excel";
-      let errorDetails = error instanceof Error ? error.message : "Error desconocido";
-      
-      if (error instanceof Error) {
-        if (error.message.includes("duplicate key")) {
-          errorMessage = "Este archivo ya ha sido importado";
-        } else if (error.message.includes("invalid input syntax")) {
-          errorMessage = "El formato de los datos no es válido";
-        }
-      }
-      
       res.status(500).json({ 
-        error: errorMessage,
-        details: errorDetails
+        error: "Error al importar los datos",
+        details: error instanceof Error ? error.message : "Error desconocido"
       });
     }
   });
@@ -118,6 +53,7 @@ export function registerRoutes(app: Express) {
       });
     }
   });
+
   app.delete("/api/imported-data/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
@@ -126,13 +62,119 @@ export function registerRoutes(app: Express) {
       }
 
       await db.delete(importedData).where(eq(importedData.id, id));
-      res.json({ message: "Archivo eliminado correctamente" });
+      res.json({ message: "Datos eliminados correctamente" });
     } catch (error) {
-      console.error("Error al eliminar el archivo:", error);
+      console.error("Error al eliminar datos:", error);
       res.status(500).json({ 
-        error: "Error al eliminar el archivo",
+        error: "Error al eliminar los datos",
         details: error instanceof Error ? error.message : "Error desconocido"
       });
+    }
+  });
+
+  // PDF Document Routes
+  app.post("/api/pdf-documents", async (req: Request, res: Response) => {
+    try {
+      const { fileName, fileContent, fileSize, mimeType } = req.body;
+
+      if (!fileName || !fileContent || !fileSize || !mimeType) {
+        return res.status(400).json({ error: "Faltan campos requeridos" });
+      }
+
+      if (mimeType !== 'application/pdf') {
+        return res.status(400).json({ error: "El archivo debe ser un PDF" });
+      }
+
+      const result = await db.insert(pdfDocuments).values({
+        fileName,
+        fileContent: Buffer.from(fileContent, 'base64'),
+        fileSize,
+        mimeType,
+      }).returning();
+
+      res.json({ 
+        message: "PDF guardado correctamente",
+        document: result[0]
+      });
+    } catch (error) {
+      console.error("Error al guardar PDF:", error);
+      res.status(500).json({ 
+        error: "Error al guardar el PDF",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
+
+  app.get("/api/pdf-documents", async (_req: Request, res: Response) => {
+    try {
+      const result = await db.select({
+        id: pdfDocuments.id,
+        fileName: pdfDocuments.fileName,
+        fileSize: pdfDocuments.fileSize,
+        uploadedAt: pdfDocuments.uploadedAt,
+      }).from(pdfDocuments).orderBy(pdfDocuments.uploadedAt);
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error al obtener PDFs:", error);
+      res.status(500).json({ 
+        error: "Error al obtener los PDFs",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
+
+  app.get("/api/pdf-documents/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      const document = await db.select().from(pdfDocuments).where(eq(pdfDocuments.id, id)).limit(1);
+      
+      if (!document.length) {
+        return res.status(404).json({ error: "PDF no encontrado" });
+      }
+
+      res.setHeader('Content-Type', document[0].mimeType);
+      res.setHeader('Content-Disposition', `inline; filename="${document[0].fileName}"`);
+      res.send(document[0].fileContent);
+    } catch (error) {
+      console.error("Error al obtener PDF:", error);
+      res.status(500).json({ 
+        error: "Error al obtener el PDF",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
+
+  app.delete("/api/pdf-documents/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      await db.delete(pdfDocuments).where(eq(pdfDocuments.id, id));
+      res.json({ message: "PDF eliminado correctamente" });
+    } catch (error) {
+      console.error("Error al eliminar PDF:", error);
+      res.status(500).json({ 
+        error: "Error al eliminar el PDF",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
+
+  // INE Data Routes
+  app.get("/api/ine-data", async (_req: Request, res: Response) => {
+    try {
+      const response = await axios.get("https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2074?nult=8");
+      res.json(response.data);
+    } catch (error) {
+      console.error("Error fetching INE data:", error);
+      res.status(500).json({ error: "Error al obtener datos del INE" });
     }
   });
 }
