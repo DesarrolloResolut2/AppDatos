@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -13,12 +13,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchImportedData, type ImportedDataResponse } from "../lib/api";
+import { fetchImportedData, deleteImportedData, type ImportedDataResponse } from "../lib/api";
 
 export function ImportedDataPage() {
   const [selectedFile, setSelectedFile] = useState<ImportedDataResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
   const rowsPerPage = 20;
+  const queryClient = useQueryClient();
 
   const { data: importedFiles, isLoading, error } = useQuery({
     queryKey: ["importedData"],
@@ -103,13 +105,36 @@ export function ImportedDataPage() {
                         <TableCell>{file.sheetName}</TableCell>
                         <TableCell>{formatDate(file.importedAt)}</TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewData(file)}
-                          >
-                            Ver Datos
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewData(file)}
+                            >
+                              Ver Datos
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              disabled={isDeleting}
+                              onClick={async () => {
+                                try {
+                                  setIsDeleting(true);
+                                  await deleteImportedData(file.id);
+                                  await queryClient.invalidateQueries({ queryKey: ["importedData"] });
+                                  if (selectedFile?.id === file.id) {
+                                    setSelectedFile(null);
+                                  }
+                                } catch (error) {
+                                  console.error("Error al eliminar:", error);
+                                } finally {
+                                  setIsDeleting(false);
+                                }
+                              }}
+                            >
+                              {isDeleting ? "Eliminando..." : "Eliminar"}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

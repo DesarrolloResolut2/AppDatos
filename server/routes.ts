@@ -117,4 +117,21 @@ export function registerRoutes(app: Express) {
       });
     }
   });
+  app.delete("/api/imported-data/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      await db.delete(importedData).where(importedData.id.equals(id));
+      res.json({ message: "Archivo eliminado correctamente" });
+    } catch (error) {
+      console.error("Error al eliminar el archivo:", error);
+      res.status(500).json({ 
+        error: "Error al eliminar el archivo",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
 }

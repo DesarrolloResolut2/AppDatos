@@ -139,3 +139,14 @@ export async function fetchImportedData(): Promise<ImportedDataResponse[]> {
     throw new Error("Error al obtener los datos importados");
   }
 }
+export async function deleteImportedData(id: number): Promise<void> {
+  try {
+    const response = await axios.delete(`/api/imported-data/${id}`);
+    if (!response.ok) {
+      throw new Error('Error al eliminar el archivo');
+    }
+  } catch (error) {
+    console.error("Error deleting imported data:", error);
+    throw new Error("Error al eliminar el archivo");
+  }
+}
