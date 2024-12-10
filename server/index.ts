@@ -1,4 +1,4 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express, { type Request, type Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic } from "./vite";
 import { createServer } from "http";
@@ -15,82 +15,56 @@ function log(message: string) {
   console.log(`${formattedTime} [express] ${message}`);
 }
 
-const app = express();
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: false, limit: '50mb' }));
-
-// Configurar CORS para HTTP y WebSocket
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
-
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
-
-(async () => {
+async function startServer() {
   try {
+    const app = express();
+    
+    // Configuración básica de Express
+    app.use(express.json({ limit: '50mb' }));
+    app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+    // Configurar CORS
+    app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+      } else {
+        next();
+      }
+    });
+
+    // Logging middleware
+    app.use((req, res, next) => {
+      const start = Date.now();
+      const path = req.path;
+      
+      res.on("finish", () => {
+        const duration = Date.now() - start;
+        if (path.startsWith("/api")) {
+          log(`${req.method} ${path} ${res.statusCode} in ${duration}ms`);
+        }
+      });
+
+      next();
+    });
+
+    // Registrar rutas de la API
     registerRoutes(app);
+
+    // Crear servidor HTTP
     const server = createServer(app);
 
-    // ALWAYS serve the app on port 5000
-    const PORT = process.env.PORT || 5000;
-    const HOST = "0.0.0.0";
-    const WEBSOCKET_PATH = '/ws';
-
-    // Configurar WebSocket Server
+    // Configuración del servidor WebSocket
     const wss = new WebSocketServer({ 
-      noServer: true,
+      server,
+      path: '/ws',
       perMessageDeflate: false
     });
 
-    // Manejar el upgrade de la conexión HTTP a WebSocket
-    server.on('upgrade', (request, socket, head) => {
-      const pathname = new URL(request.url || '', `http://${request.headers.host}`).pathname;
-      
-      if (pathname === WEBSOCKET_PATH) {
-        wss.handleUpgrade(request, socket, head, (ws) => {
-          wss.emit('connection', ws, request);
-        });
-      }
-    });
-
-    // Configurar eventos WebSocket
+    // Eventos WebSocket
     wss.on('connection', (ws: WebSocket) => {
       log('Cliente WebSocket conectado');
       
@@ -111,31 +85,44 @@ app.use((req, res, next) => {
       });
     });
 
-    // Iniciar el servidor
-    server.listen(Number(PORT), HOST, () => {
-      log(`Server running at http://${HOST}:${PORT}`);
-      log(`WebSocket server available at ws://${HOST}:${PORT}${WEBSOCKET_PATH}`);
-    }).on('error', (err) => {
-      console.error('Error al iniciar el servidor:', err);
-      process.exit(1);
-    });
-
-    // Manejar errores globales
+    // Manejo global de errores
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      console.error('Error no manejado:', err);
       const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-      console.error(err);
+      const message = err.message || "Error interno del servidor";
+      res.status(status).json({ error: message });
     });
 
-    // Configurar Vite o servir archivos estáticos
+    // Configurar Vite en desarrollo o servir archivos estáticos en producción
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
       serveStatic(app);
     }
+
+    // Iniciar el servidor
+    const PORT = process.env.PORT || 5000;
+    const HOST = "0.0.0.0";
+
+    server.listen(Number(PORT), HOST, () => {
+      log(`Servidor iniciado en http://${HOST}:${PORT}`);
+      log(`Servidor WebSocket disponible en ws://${HOST}:${PORT}/ws`);
+    });
+
+    // Manejar errores del servidor
+    server.on('error', (error) => {
+      console.error('Error en el servidor:', error);
+      process.exit(1);
+    });
+
   } catch (error) {
-    console.error('Error fatal:', error);
+    console.error('Error fatal al iniciar el servidor:', error);
     process.exit(1);
   }
-})();
+}
+
+// Iniciar el servidor
+startServer().catch((error) => {
+  console.error('Error al iniciar la aplicación:', error);
+  process.exit(1);
+});
