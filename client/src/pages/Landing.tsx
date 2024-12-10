@@ -42,6 +42,7 @@ export function Landing() {
               <SelectItem value="/natalidad">Tasa de natalidad</SelectItem>
               <SelectItem value="/mortalidad">Tasa de mortalidad</SelectItem>
               <SelectItem value="/pib">Tasa P.I.B a precios de mercado</SelectItem>
+              <SelectItem value="/importar">Importar datos Excel</SelectItem>
             </SelectContent>
           </Select>
         </Card>

@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import * as XLSX from 'xlsx';
 
 export function ImportExcelPage() {
@@ -33,14 +31,18 @@ export function ImportExcelPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ data: jsonData }),
+            body: JSON.stringify({ 
+              data: jsonData,
+              fileName: file.name,
+              sheetName: sheetName
+            }),
           });
 
           if (!response.ok) {
             throw new Error('Error al importar los datos');
           }
 
-          // Limpiar el estado después de una importación exitosa
+          // Limpiar el error después de una importación exitosa
           setError(null);
         } catch (err) {
           setError('Error al procesar el archivo: ' + (err instanceof Error ? err.message : 'Error desconocido'));
@@ -54,17 +56,6 @@ export function ImportExcelPage() {
       setError('Error al procesar el archivo: ' + (err instanceof Error ? err.message : 'Error desconocido'));
     }
   };
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          {error}
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
     <div className="container mx-auto py-8">
@@ -100,6 +91,13 @@ export function ImportExcelPage() {
             </div>
           </div>
         </Card>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {fileData.length > 0 && (
           <Card className="p-6">
