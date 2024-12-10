@@ -69,11 +69,13 @@ app.use((req, res, next) => {
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client
-  const PORT = 5000;
+  const PORT = process.env.PORT || 5000;
+  const HOST = "0.0.0.0";
   const WEBSOCKET_PATH = '/ws';
   
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
+  server.listen(PORT, HOST, () => {
+    log(`Server running at http://${HOST}:${PORT}`);
+    log(`WebSocket server available at ws://${HOST}:${PORT}${WEBSOCKET_PATH}`);
     
     // Configurar WebSocket Server con CORS después de que el servidor esté escuchando
     const wss = new WebSocketServer({ 
