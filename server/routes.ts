@@ -85,13 +85,10 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ error: "El archivo debe ser un PDF" });
       }
 
-      // Convertir el contenido del archivo a un Buffer y luego a un string hexadecimal
-      const buffer = Buffer.from(fileContent, 'base64');
-      const hexString = '\\x' + buffer.toString('hex');
-
+      // Guardamos el contenido en base64 directamente
       const result = await db.insert(pdfDocuments).values({
         fileName,
-        fileContent: hexString,
+        fileContent: fileContent,  // contenido en base64
         fileSize,
         mimeType,
       }).returning();
@@ -141,11 +138,10 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "PDF no encontrado" });
       }
 
-      // Convertir el contenido hexadecimal a Buffer
-      const hexString = document[0].fileContent;
-      const buffer = Buffer.from(hexString.slice(2), 'hex');
+      // Convertir el contenido base64 a Buffer
+      const buffer = Buffer.from(document[0].fileContent, 'base64');
 
-      // Extraer el texto del PDF
+      // Extraer el texto del PDF usando pdf-parse
       const pdf = require('pdf-parse');
       const data = await pdf(buffer);
       
