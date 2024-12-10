@@ -119,7 +119,7 @@ export function ImportExcelPage() {
           <div className="space-y-4">
             <input
               type="file"
-              accept=".xlsx, .xls"
+              accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
               onChange={handleFileUpload}
               className="block w-full text-sm text-slate-500
                 file:mr-4 file:py-2 file:px-4
