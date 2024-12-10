@@ -42,6 +42,8 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       res.status(500).json({ error: "Error al obtener datos de natalidad del INE" });
     }
+  });
+
   app.post("/api/import-excel", async (req: Request, res: Response) => {
     try {
       const { data, fileName = "imported-file", sheetName = "Sheet1" } = req.body;
@@ -82,6 +84,5 @@ export function registerRoutes(app: Express) {
         details: error instanceof Error ? error.message : "Error desconocido"
       });
     }
-  });
   });
 }
