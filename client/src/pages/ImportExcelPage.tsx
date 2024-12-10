@@ -8,56 +8,99 @@ import * as XLSX from 'xlsx';
 export function ImportExcelPage() {
   const [fileData, setFileData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
+      setIsLoading(true);
+      setError(null);
+      setUploadProgress(0);
+      
       const reader = new FileReader();
+      
       reader.onload = async (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        setFileData(jsonData);
-        
-        // Enviar datos al servidor
         try {
-          const response = await fetch('/api/import-excel', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-              data: jsonData,
-              fileName: file.name,
-              sheetName: sheetName
-            }),
-          });
+          setUploadProgress(30);
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(sheet);
+          setUploadProgress(60);
+          setFileData(jsonData);
+          
+          try {
+            const response = await fetch('/api/import-excel', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ 
+                data: jsonData,
+                fileName: file.name,
+                sheetName: sheetName
+              }),
+            });
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || errorData.details || 'Error al importar los datos');
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || errorData.details || 'Error al importar los datos');
+            }
+
+            setError(null);
+            const result = await response.json();
+            const successMessage = document.createElement('div');
+            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-in fade-in duration-300';
+            successMessage.textContent = '¡Archivo importado correctamente!';
+            document.body.appendChild(successMessage);
+            
+            setTimeout(() => {
+              successMessage.classList.add('animate-out', 'fade-out');
+              setTimeout(() => successMessage.remove(), 300);
+            }, 3000);
+            
+            setUploadProgress(100);
+            setTimeout(() => {
+              setIsLoading(false);
+              setUploadProgress(0);
+            }, 500);
+          } catch (err) {
+            const errorData = err instanceof Error ? err.message : 'Error desconocido';
+            console.error('Error detallado:', err);
+            
+            let errorMessage = 'Error al procesar el archivo';
+            if (typeof errorData === 'string' && errorData.includes(':')) {
+              errorMessage = errorData.split(':')[1].trim();
+            } else if (typeof errorData === 'object' && errorData !== null) {
+              errorMessage = (errorData as any).message || errorMessage;
+            }
+            
+            setError(errorMessage);
+            setIsLoading(false);
+            setUploadProgress(0);
           }
-
-          // Mostrar mensaje de éxito y limpiar el error
-          setError(null);
-          alert('Archivo importado correctamente');
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-          console.error('Error detallado:', err);
-          setError('Error al procesar el archivo: ' + errorMessage);
+          setError('Error al procesar el archivo Excel');
+          setIsLoading(false);
+          setUploadProgress(0);
         }
       };
+
       reader.onerror = () => {
         setError('Error al leer el archivo');
+        setIsLoading(false);
+        setUploadProgress(0);
       };
+
       reader.readAsBinaryString(file);
     } catch (err) {
       setError('Error al procesar el archivo: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+      setIsLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -85,13 +128,28 @@ export function ImportExcelPage() {
                 type="file"
                 accept=".xlsx,.xls,.csv"
                 onChange={handleFileUpload}
+                disabled={isLoading}
                 className="block w-full text-sm text-gray-500
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-md file:border-0
                   file:text-sm file:font-semibold
                   file:bg-primary file:text-primary-foreground
-                  hover:file:bg-primary/90"
+                  hover:file:bg-primary/90
+                  disabled:opacity-50 disabled:cursor-not-allowed"
               />
+              {isLoading && (
+                <div className="space-y-2">
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary transition-all duration-300 ease-in-out"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">
+                    Procesando archivo... {uploadProgress}%
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </Card>
