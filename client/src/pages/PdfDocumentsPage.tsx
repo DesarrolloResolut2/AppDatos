@@ -234,12 +234,7 @@ export function PdfDocumentsPage() {
               <div className="flex justify-center">
                 <div style={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Document
-                    file={{
-                      url: `/api/pdf-documents/${selectedPdf}`,
-                      httpHeaders: {
-                        'Accept': 'application/pdf'
-                      },
-                    }}
+                    file={`/api/pdf-documents/${selectedPdf}`}
                     onLoadSuccess={onDocumentLoadSuccess}
                     onLoadError={(error) => {
                       console.error('Error loading PDF:', error);

@@ -141,8 +141,10 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "PDF no encontrado" });
       }
 
-      res.setHeader('Content-Type', document[0].mimeType);
+      res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${document[0].fileName}"`);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Cache-Control', 'public, max-age=0');
       // Convertir el contenido hexadecimal de nuevo a Buffer
       const hexString = document[0].fileContent;
       const buffer = Buffer.from(hexString.slice(2), 'hex');
