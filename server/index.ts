@@ -73,7 +73,7 @@ app.use((req, res, next) => {
   const HOST = "0.0.0.0";
   const WEBSOCKET_PATH = '/ws';
   
-  server.listen(PORT, HOST, () => {
+  server.listen(Number(PORT), HOST, () => {
     log(`Server running at http://${HOST}:${PORT}`);
     log(`WebSocket server available at ws://${HOST}:${PORT}${WEBSOCKET_PATH}`);
     
