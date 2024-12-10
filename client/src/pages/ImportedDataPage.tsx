@@ -59,9 +59,14 @@ export function ImportedDataPage() {
   return (
     <div className="container mx-auto py-8">
       <div className="flex items-center justify-between mb-8">
-        <Link href="/importar" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-          Volver a Importar
-        </Link>
+        <div className="flex gap-4">
+          <Link href="/" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+            Volver a inicio
+          </Link>
+          <Link href="/importar" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+            Volver a Importar
+          </Link>
+        </div>
         <h1 className="text-3xl font-bold text-center flex-1">
           Archivos Excel Importados
         </h1>
