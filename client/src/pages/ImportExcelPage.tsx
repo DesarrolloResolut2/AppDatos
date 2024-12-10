@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Save } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import * as XLSX from 'xlsx';
@@ -12,110 +12,92 @@ export function ImportExcelPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const rowsPerPage = 20; // Mostrar 20 filas por página
+  const [fileName, setFileName] = useState<string>("");
+  const [sheetName, setSheetName] = useState<string>("");
+  const rowsPerPage = 20;
+  const [_, setLocation] = useLocation();
 
   const totalPages = Math.ceil(fileData.length / rowsPerPage);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      setUploadProgress(0);
-      setCurrentPage(0); // Reset page when new file is uploaded
-      
-      const reader = new FileReader();
-      
-      reader.onload = async (e) => {
-        try {
-          setUploadProgress(30);
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(sheet);
-          setUploadProgress(60);
-          setFileData(jsonData);
-          
-          try {
-            const response = await fetch('/api/import-excel', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ 
-                data: jsonData,
-                fileName: file.name,
-                sheetName: sheetName
-              }),
-            });
-
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || errorData.details || 'Error al importar los datos');
-            }
-
-            setError(null);
-            const result = await response.json();
-            const successMessage = document.createElement('div');
-            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-in fade-in duration-300';
-            successMessage.textContent = '¡Archivo importado correctamente!';
-            document.body.appendChild(successMessage);
-            
-            setTimeout(() => {
-              successMessage.classList.add('animate-out', 'fade-out');
-              setTimeout(() => successMessage.remove(), 300);
-            }, 3000);
-            
-            setUploadProgress(100);
-            setTimeout(() => {
-              setIsLoading(false);
-              setUploadProgress(0);
-            }, 500);
-          } catch (err) {
-            const errorData = err instanceof Error ? err.message : 'Error desconocido';
-            console.error('Error detallado:', err);
-            
-            let errorMessage = 'Error al procesar el archivo';
-            if (typeof errorData === 'string' && errorData.includes(':')) {
-              errorMessage = errorData.split(':')[1].trim();
-            } else if (typeof errorData === 'object' && errorData !== null) {
-              errorMessage = (errorData as any).message || errorMessage;
-            }
-            
-            setError(errorMessage);
-            setIsLoading(false);
-            setUploadProgress(0);
-          }
-        } catch (err) {
-          setError('Error al procesar el archivo Excel');
-          setIsLoading(false);
-          setUploadProgress(0);
-        }
-      };
-
-      reader.onerror = () => {
-        setError('Error al leer el archivo');
-        setIsLoading(false);
-        setUploadProgress(0);
-      };
-
-      reader.readAsBinaryString(file);
-    } catch (err) {
-      setError('Error al procesar el archivo: ' + (err instanceof Error ? err.message : 'Error desconocido'));
-      setIsLoading(false);
-      setUploadProgress(0);
-    }
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(0, prev - 1));
   };
 
   const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages - 1));
+    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
   };
 
-  const handlePrevPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 0));
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    setUploadProgress(0);
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        setUploadProgress(30);
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
+        
+        setUploadProgress(60);
+        setFileData(jsonData);
+        setFileName(file.name);
+        setSheetName(firstSheetName);
+        setError(null);
+        
+        setUploadProgress(100);
+        setTimeout(() => {
+          setIsLoading(false);
+          setUploadProgress(0);
+        }, 500);
+      } catch (err) {
+        setError('Error al procesar el archivo Excel');
+        setIsLoading(false);
+        setUploadProgress(0);
+      }
+    };
+
+    reader.readAsBinaryString(file);
+  };
+
+  const handleSaveData = async () => {
+    if (!fileData.length) {
+      setError("No hay datos para guardar. Por favor, sube un archivo Excel primero.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/import-excel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: fileData,
+          fileName,
+          sheetName
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.details || 'Error al importar los datos');
+      }
+
+      // Redireccionar a la página de datos importados
+      setLocation('/importados');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al guardar los datos';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -135,73 +117,70 @@ export function ImportExcelPage() {
       <div className="space-y-6">
         <Card className="p-6">
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Subir archivo Excel</h2>
-            <p className="text-sm text-gray-600">
-              Seleccione un archivo Excel (.xlsx o .csv) para importar los datos.
-              El archivo debe contener las columnas necesarias para el tipo de datos que desea importar.
-            </p>
-            <div className="flex flex-col space-y-2">
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileUpload}
-                disabled={isLoading}
-                className="block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-md file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-primary file:text-primary-foreground
-                  hover:file:bg-primary/90
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              {isLoading && (
-                <div className="space-y-2">
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary transition-all duration-300 ease-in-out"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-gray-600 text-center">
-                    Procesando archivo... {uploadProgress}%
-                  </p>
-                </div>
-              )}
-            </div>
+            <input
+              type="file"
+              accept=".xlsx, .xls"
+              onChange={handleFileUpload}
+              className="block w-full text-sm text-slate-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-primary file:text-primary-foreground
+                hover:file:bg-primary/90"
+            />
+            
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {isLoading && (
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+            )}
           </div>
         </Card>
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
 
         {fileData.length > 0 && (
           <Card className="p-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Vista previa de los datos</h3>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 0}
+                    >
+                      Anterior
+                    </Button>
+                    <span className="text-sm">
+                      Página {currentPage + 1} de {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages - 1}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrevPage}
-                    disabled={currentPage === 0}
+                    onClick={handleSaveData}
+                    disabled={isLoading}
+                    className="flex items-center gap-2"
                   >
-                    Anterior
-                  </Button>
-                  <span className="text-sm">
-                    Página {currentPage + 1} de {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages - 1}
-                  >
-                    Siguiente
+                    <Save className="w-4 h-4" />
+                    Guardar Datos
                   </Button>
                 </div>
               </div>
@@ -220,18 +199,20 @@ export function ImportExcelPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {fileData.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage).map((row, index) => (
-                      <tr key={index}>
-                        {Object.values(row).map((value: any, cellIndex) => (
-                          <td
-                            key={cellIndex}
-                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                          >
-                            {value?.toString() || ''}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
+                    {fileData
+                      .slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage)
+                      .map((row, index) => (
+                        <tr key={index}>
+                          {Object.values(row).map((value: any, cellIndex) => (
+                            <td
+                              key={cellIndex}
+                              className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                            >
+                              {value?.toString() || ''}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
