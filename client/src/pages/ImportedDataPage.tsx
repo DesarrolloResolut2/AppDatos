@@ -69,12 +69,22 @@ export function ImportedDataPage() {
       <div className="space-y-6">
         {isLoading ? (
           <Card className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+              <p className="text-center text-muted-foreground">
+                Cargando archivos importados...
+              </p>
             </div>
           </Card>
+        ) : error ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Error al cargar los archivos importados. Por favor, inténtelo de nuevo más tarde.
+            </AlertDescription>
+          </Alert>
         ) : !importedFiles?.length ? (
           <Card className="p-6 text-center">
             <p className="text-muted-foreground">
@@ -125,8 +135,10 @@ export function ImportedDataPage() {
                                   if (selectedFile?.id === file.id) {
                                     setSelectedFile(null);
                                   }
+                                  setError(null);
                                 } catch (error) {
                                   console.error("Error al eliminar:", error);
+                                  setError("Error al eliminar el archivo. Por favor, inténtelo de nuevo.");
                                 } finally {
                                   setIsDeleting(false);
                                 }

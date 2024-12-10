@@ -1,4 +1,5 @@
 import type { Express, Request, Response } from "express";
+import { eq } from "drizzle-orm";
 import axios from "axios";
 import { db } from "../db";
 import { importedData } from "../db/schema";
@@ -124,7 +125,7 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ error: "ID inválido" });
       }
 
-      await db.delete(importedData).where(importedData.id.equals(id));
+      await db.delete(importedData).where(eq(importedData.id, id));
       res.json({ message: "Archivo eliminado correctamente" });
     } catch (error) {
       console.error("Error al eliminar el archivo:", error);
