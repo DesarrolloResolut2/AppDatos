@@ -3,6 +3,19 @@ import { eq } from "drizzle-orm";
 import axios from "axios";
 import { db } from "../db";
 import { importedData, pdfDocuments } from "../db/schema";
+const pdfParse = require('pdf-parse');
+
+// Configuración básica para pdf-parse
+const PDF_PARSE_OPTIONS = {
+  pagerender: function(pageData: { getTextContent: () => any; }) {
+    try {
+      return pageData.getTextContent();
+    } catch (error) {
+      console.error('Error al renderizar página:', error);
+      return null;
+    }
+  }
+};
 
 export function registerRoutes(app: Express) {
   // Add CORS headers
@@ -127,32 +140,66 @@ export function registerRoutes(app: Express) {
 
   app.get("/api/pdf-documents/:id/content", async (req: Request, res: Response) => {
     try {
+      console.log(`Iniciando procesamiento de PDF ID: ${req.params.id}`);
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
+        console.error(`ID inválido: ${req.params.id}`);
         return res.status(400).json({ error: "ID inválido" });
       }
 
+      console.log('Buscando documento en la base de datos...');
       const document = await db.select().from(pdfDocuments).where(eq(pdfDocuments.id, id)).limit(1);
       
       if (!document.length) {
+        console.error(`PDF no encontrado con ID: ${id}`);
         return res.status(404).json({ error: "PDF no encontrado" });
       }
 
-      // Convertir el contenido base64 a Buffer
-      const buffer = Buffer.from(document[0].fileContent, 'base64');
+      try {
+        console.log(`Procesando PDF: ${document[0].fileName}`);
+        
+        // Validar contenido base64
+        if (!document[0].fileContent) {
+          throw new Error('Contenido del PDF no encontrado en la base de datos');
+        }
 
-      // Extraer el texto del PDF usando pdf-parse
-      const pdf = require('pdf-parse');
-      const data = await pdf(buffer);
-      
-      res.json({
-        fileName: document[0].fileName,
-        text: data.text,
-        numPages: data.numpages,
-        info: data.info
-      });
+        // Crear buffer desde base64
+        const buffer = Buffer.from(document[0].fileContent, 'base64');
+        console.log(`Buffer creado, tamaño: ${buffer.length} bytes`);
+        
+        if (buffer.length === 0) {
+          throw new Error('Buffer vacío después de la conversión base64');
+        }
+
+        // Procesar PDF
+        console.log('Iniciando parseado del PDF...');
+        const data = await pdfParse(buffer, PDF_PARSE_OPTIONS);
+        console.log('PDF parseado exitosamente');
+
+        // Validar resultado
+        if (!data || typeof data.text !== 'string') {
+          throw new Error('Resultado del parseo inválido');
+        }
+
+        const response = {
+          fileName: document[0].fileName,
+          text: data.text || 'No se pudo extraer texto',
+          numPages: data.numpages || 1,
+          info: data.info || {}
+        };
+
+        console.log(`PDF procesado correctamente: ${response.numPages} páginas`);
+        res.json(response);
+      } catch (parseError) {
+        console.error("Error detallado al parsear el PDF:", parseError);
+        res.status(500).json({ 
+          error: "Error al procesar el contenido del PDF",
+          details: parseError instanceof Error ? parseError.message : "Error desconocido"
+        });
+      }
     } catch (error) {
-      console.error("Error al obtener contenido del PDF:", error);
+      console.error("Error general al obtener contenido del PDF:", error);
       res.status(500).json({ 
         error: "Error al extraer el contenido del PDF",
         details: error instanceof Error ? error.message : "Error desconocido"

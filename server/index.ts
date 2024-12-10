@@ -64,25 +64,21 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  registerRoutes(app);
-  const server = createServer(app);
+  try {
+    registerRoutes(app);
+    const server = createServer(app);
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client
-  const PORT = process.env.PORT || 5000;
-  const HOST = "0.0.0.0";
-  const WEBSOCKET_PATH = '/ws';
-  
-  server.listen(Number(PORT), HOST, () => {
-    log(`Server running at http://${HOST}:${PORT}`);
-    log(`WebSocket server available at ws://${HOST}:${PORT}${WEBSOCKET_PATH}`);
-    
-    // Configurar WebSocket Server con CORS después de que el servidor esté escuchando
+    // ALWAYS serve the app on port 5000
+    const PORT = process.env.PORT || 5000;
+    const HOST = "0.0.0.0";
+    const WEBSOCKET_PATH = '/ws';
+
+    // Configurar WebSocket Server
     const wss = new WebSocketServer({ 
       noServer: true,
       perMessageDeflate: false
     });
-    
+
     // Manejar el upgrade de la conexión HTTP a WebSocket
     server.on('upgrade', (request, socket, head) => {
       const pathname = new URL(request.url || '', `http://${request.headers.host}`).pathname;
@@ -93,7 +89,8 @@ app.use((req, res, next) => {
         });
       }
     });
-    
+
+    // Configurar eventos WebSocket
     wss.on('connection', (ws: WebSocket) => {
       log('Cliente WebSocket conectado');
       
@@ -113,22 +110,32 @@ app.use((req, res, next) => {
         log('Cliente WebSocket desconectado');
       });
     });
-  });
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    // Iniciar el servidor
+    server.listen(Number(PORT), HOST, () => {
+      log(`Server running at http://${HOST}:${PORT}`);
+      log(`WebSocket server available at ws://${HOST}:${PORT}${WEBSOCKET_PATH}`);
+    }).on('error', (err) => {
+      console.error('Error al iniciar el servidor:', err);
+      process.exit(1);
+    });
 
-    res.status(status).json({ message });
-    throw err;
-  });
+    // Manejar errores globales
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+      console.error(err);
+    });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    // Configurar Vite o servir archivos estáticos
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+  } catch (error) {
+    console.error('Error fatal:', error);
+    process.exit(1);
   }
 })();
