@@ -122,3 +122,20 @@ export async function fetchPIBData(): Promise<PIBDataItem[]> {
     throw new Error("Error al obtener datos del PIB");
   }
 }
+export interface ImportedDataResponse {
+  id: number;
+  fileName: string;
+  sheetName: string;
+  data: any[];
+  importedAt: string;
+}
+
+export async function fetchImportedData(): Promise<ImportedDataResponse[]> {
+  try {
+    const response = await axios.get<ImportedDataResponse[]>('/api/imported-data');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching imported data:", error);
+    throw new Error("Error al obtener los datos importados");
+  }
+}

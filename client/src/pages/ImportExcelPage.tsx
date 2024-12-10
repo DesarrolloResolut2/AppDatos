@@ -124,6 +124,9 @@ export function ImportExcelPage() {
         <Link href="/" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
           Volver a inicio
         </Link>
+        <Link href="/importados" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+          Ver archivos importados
+        </Link>
         <h1 className="text-3xl font-bold text-center flex-1">
           Importar Datos desde Excel
         </h1>
