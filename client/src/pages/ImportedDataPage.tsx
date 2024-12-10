@@ -19,10 +19,11 @@ export function ImportedDataPage() {
   const [selectedFile, setSelectedFile] = useState<ImportedDataResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const rowsPerPage = 20;
   const queryClient = useQueryClient();
 
-  const { data: importedFiles, isLoading, error } = useQuery({
+  const { data: importedFiles, isLoading, error: queryError } = useQuery({
     queryKey: ["importedData"],
     queryFn: fetchImportedData,
   });
@@ -42,7 +43,7 @@ export function ImportedDataPage() {
     });
   };
 
-  if (error) {
+  if (queryError) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
@@ -97,6 +98,12 @@ export function ImportedDataPage() {
         ) : (
           <>
             <Card className="p-6">
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <h2 className="text-xl font-semibold mb-4">Archivos Disponibles</h2>
               <div className="overflow-x-auto">
                 <Table>
