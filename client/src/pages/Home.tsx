@@ -68,6 +68,9 @@ export function Home() {
           <Link href="/natalidad" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
             Tasa de Natalidad
           </Link>
+          <Link href="/importar" className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+            Importar Datos Excel
+          </Link>
         </div>
       </div>
 
