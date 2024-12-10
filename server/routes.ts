@@ -85,9 +85,13 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ error: "El archivo debe ser un PDF" });
       }
 
+      // Convertir el contenido del archivo a un Buffer y luego a un string hexadecimal
+      const buffer = Buffer.from(fileContent, 'base64');
+      const hexString = '\\x' + buffer.toString('hex');
+
       const result = await db.insert(pdfDocuments).values({
         fileName,
-        fileContent: Buffer.from(fileContent, 'base64'),
+        fileContent: hexString,
         fileSize,
         mimeType,
       }).returning();
@@ -139,7 +143,10 @@ export function registerRoutes(app: Express) {
 
       res.setHeader('Content-Type', document[0].mimeType);
       res.setHeader('Content-Disposition', `inline; filename="${document[0].fileName}"`);
-      res.send(document[0].fileContent);
+      // Convertir el contenido hexadecimal de nuevo a Buffer
+      const hexString = document[0].fileContent;
+      const buffer = Buffer.from(hexString.slice(2), 'hex');
+      res.send(buffer);
     } catch (error) {
       console.error("Error al obtener PDF:", error);
       res.status(500).json({ 
