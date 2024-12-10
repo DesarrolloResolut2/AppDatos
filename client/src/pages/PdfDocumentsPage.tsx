@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, FileText, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+import { Document, Page } from 'react-pdf';
+import { pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 import {
   Table,
   TableBody,
@@ -25,7 +26,8 @@ interface PdfDocument {
 }
 
 // Configurar worker de PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+const workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 export function PdfDocumentsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -232,8 +234,17 @@ export function PdfDocumentsPage() {
               <div className="flex justify-center">
                 <div style={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Document
-                    file={`/api/pdf-documents/${selectedPdf}`}
+                    file={{
+                      url: `/api/pdf-documents/${selectedPdf}`,
+                      httpHeaders: {
+                        'Accept': 'application/pdf'
+                      },
+                    }}
                     onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={(error) => {
+                      console.error('Error loading PDF:', error);
+                      setError('Error al cargar el PDF. Por favor, inténtelo de nuevo.');
+                    }}
                     error={
                       <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
@@ -249,10 +260,15 @@ export function PdfDocumentsPage() {
                     }
                   >
                     <Page
+                      key={`page_${pageNumber}`}
                       pageNumber={pageNumber}
                       renderTextLayer={true}
                       renderAnnotationLayer={true}
                       scale={1.2}
+                      onLoadError={(error) => {
+                        console.error('Error loading page:', error);
+                        setError('Error al cargar la página del PDF.');
+                      }}
                     />
                   </Document>
                 </div>
