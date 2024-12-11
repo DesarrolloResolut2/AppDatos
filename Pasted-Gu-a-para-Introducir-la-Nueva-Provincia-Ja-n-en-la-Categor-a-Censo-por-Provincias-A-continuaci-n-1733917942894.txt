@@ -1,0 +1,110 @@
+Guía para Introducir la Nueva Provincia (Jaén) en la Categoría "Censo por Provincias"
+A continuación, se detalla cómo agregar Jaén a la categoría "Censo por Provincias" de tu aplicación. Esta guía asegura que los usuarios puedan seleccionar Jaén, cargar los datos desde su API y visualizarlos en la tabla existente.
+
+1. Preparación de la Configuración
+Añadir Jaén al Selector de "Tipo":
+
+Localiza el componente donde se encuentra el menú desplegable con las provincias.
+Agrega una nueva opción para Jaén en este menú.
+Ejemplo:
+
+Al seleccionar Jaén, la aplicación debe asociar esta opción con la URL API:
+plaintext
+Copiar código
+https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2876?nult=4&det=2
+Actualizar el Mapeo de URLs:
+
+Añade Jaén al objeto que relaciona cada provincia con su URL.
+Ejemplo del mapeo actualizado:
+
+json
+Copiar código
+{
+  "Cáceres": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2",
+  "Badajoz": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2859?nult=4&det=2",
+  "Soria": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2",
+  "Teruel": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2899?nult=4&det=2",
+  "Huesca": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2875?nult=4&det=2",
+  "Lleida": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2878?nult=4&det=2",
+  "Jaén": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2876?nult=4&det=2"
+}
+2. Consumir la API de Jaén
+Configurar la Llamada a la API:
+
+Implementa una función para realizar una solicitud HTTP a la URL de Jaén.
+Utiliza bibliotecas como fetch o axios.
+Procesar la Respuesta de la API:
+
+La API devuelve datos en el siguiente formato:
+Nombre: Descripción del grupo de datos (total habitantes, hombres, mujeres).
+Data: Valores por año.
+Extrae y organiza los datos relevantes para mostrarlos en la tabla.
+Ejemplo de datos importantes:
+
+Año 2023:
+Total habitantes: 627,000.
+Hombres: 308,500.
+Mujeres: 318,500.
+3. Integrar los Datos en la Tabla
+Transformar los Datos:
+
+Procesa los datos obtenidos de la API de Jaén para adaptarlos al formato requerido por la tabla.
+Estructura deseada:
+json
+Copiar código
+[
+  {
+    "Año": "2023",
+    "Total habitantes": "627,000",
+    "Hombres": "308,500",
+    "Mujeres": "318,500"
+  },
+  {
+    "Año": "2022",
+    "Total habitantes": "628,000",
+    "Hombres": "309,000",
+    "Mujeres": "319,000"
+  }
+]
+Actualizar el Estado de la Aplicación:
+
+Usa un estado de React para almacenar los datos procesados y mostrarlos dinámicamente en la tabla.
+Lógica de ejemplo:
+
+javascript
+Copiar código
+const [datosTabla, setDatosTabla] = useState([]);
+
+const cargarDatos = async (provincia) => {
+  const url = urls[provincia];
+  const response = await fetch(url);
+  const data = await response.json();
+  const datosProcesados = procesarDatos(data);
+  setDatosTabla(datosProcesados);
+};
+Renderizar los Datos:
+
+Asegúrate de que el componente de la tabla esté diseñado para recibir y mostrar los datos procesados correctamente.
+4. Manejo de Errores
+Errores en la Llamada a la API:
+
+Si la API no responde o devuelve un error, muestra un mensaje como: "No se pudieron cargar los datos de Jaén. Por favor, inténtelo de nuevo más tarde."
+Datos Incompletos o Faltantes:
+
+Para valores null o faltantes, muestra un indicador como --- o "Dato no disponible".
+5. Pruebas y Validación
+Pruebas Funcionales:
+
+Selecciona Jaén en el menú desplegable y verifica que:
+Los datos se carguen correctamente desde la API.
+La tabla muestre la información correspondiente.
+Pruebas de Usabilidad:
+
+Comprueba que el cambio entre provincias funcione sin errores ni demoras.
+Pruebas de Compatibilidad:
+
+Verifica el funcionamiento en diferentes navegadores y dispositivos.
+6. Mejoras Futuras
+Visualización de Tendencias:
+
+Implementa gráficos que muestren la evolución de la población de Jaén por años.
