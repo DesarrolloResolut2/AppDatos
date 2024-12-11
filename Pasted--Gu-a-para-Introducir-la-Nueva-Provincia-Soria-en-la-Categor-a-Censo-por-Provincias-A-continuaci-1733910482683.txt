@@ -1,0 +1,107 @@
+
+Guía para Introducir la Nueva Provincia (Soria) en la Categoría "Censo por Provincias"
+A continuación, se detalla cómo añadir la provincia de Soria a tu aplicación en la categoría "Censo por Provincias". El objetivo es que los usuarios puedan seleccionar esta provincia desde el selector, cargar los datos de la API correspondiente y mostrarlos en la tabla existente.
+
+1. Preparación de la Configuración
+Añadir la Provincia al Selector de "Tipo":
+
+Localiza el componente donde está el selector de provincias.
+Agrega una nueva opción para Soria. Esta opción debe tener un identificador único.
+Ejemplo:
+
+Al seleccionar "Soria" en el selector, el sistema debe asociar la selección a esta URL:
+plaintext
+Copiar código
+https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2
+Configurar las URLs por Provincia:
+
+Amplía el mapa de URLs para incluir la API de Soria junto con las otras provincias ya configuradas.
+Ejemplo de configuración:
+
+json
+Copiar código
+{
+  "Cáceres": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2",
+  "Badajoz": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2859?nult=4&det=2",
+  "Soria": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2"
+}
+2. Consumir la API de Soria
+Realizar la Llamada a la API:
+
+Al seleccionar Soria, envía una solicitud HTTP a su URL específica.
+Utiliza fetch o una biblioteca como axios para manejar la solicitud y obtener la respuesta.
+Gestionar la Respuesta de la API:
+
+La API retorna información estructurada que incluye:
+Nombre: Descripción del dato (total habitantes, hombres, mujeres).
+Data: Valores de población por año.
+Extrae la información relevante para adaptarla al formato esperado por la tabla.
+Ejemplo de datos para Soria:
+
+Año 2023:
+Total habitantes: 88,636.
+Hombres: 44,282.
+Mujeres: 44,354.
+3. Adaptar los Datos a la Tabla
+Transformar los Datos:
+
+Organiza los datos de la API en una estructura adecuada para la tabla.
+Ejemplo de estructura:
+json
+Copiar código
+[
+  {
+    "Año": "2023",
+    "Total habitantes": "88,636",
+    "Hombres": "44,282",
+    "Mujeres": "44,354"
+  },
+  {
+    "Año": "2022",
+    "Total habitantes": "89,212",
+    "Hombres": "44,590",
+    "Mujeres": "44,622"
+  }
+]
+Actualizar el Estado de la Tabla:
+
+Usa useState para gestionar los datos de la tabla.
+Al cambiar la selección a Soria, actualiza el estado con los datos procesados de su API.
+Ejemplo:
+
+javascript
+Copiar código
+const [datosTabla, setDatosTabla] = useState([]);
+
+const cargarDatos = async (provincia) => {
+  const url = urls[provincia];
+  const response = await fetch(url);
+  const data = await response.json();
+  const datosProcesados = procesarDatos(data);
+  setDatosTabla(datosProcesados);
+};
+Actualizar el Renderizado de la Tabla:
+
+Asegúrate de que la tabla reciba y muestre los datos actualizados al cambiar de provincia.
+4. Gestión de Errores y Casos Especiales
+Errores en la API:
+
+Si la API no responde, muestra un mensaje de error como: "No se pudieron cargar los datos para Soria. Intenta nuevamente más tarde."
+Datos Incompletos o Nulos:
+
+Si algún valor es null o está marcado como secreto, muestra un marcador visual como --- o "No disponible".
+5. Pruebas y Validación
+Pruebas Funcionales:
+
+Selecciona Soria en el selector y verifica que los datos se cargan correctamente en la tabla.
+Confirma que los valores coinciden con los retornados por la API.
+Pruebas de Usabilidad:
+
+Verifica que el selector sea intuitivo y que los datos cambien dinámicamente.
+Pruebas de Compatibilidad:
+
+Asegúrate de que la funcionalidad sea consistente en diferentes navegadores y dispositivos.
+6. Expansión Futura
+Añadir Nuevas Provincias:
+
+Reutiliza el mapa de URLs y la lógica existente para agregar más provincias.
