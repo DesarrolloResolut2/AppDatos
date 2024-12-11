@@ -11,7 +11,8 @@ const CENSO_API_URLS = {
   huesca: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2875?nult=4&det=2",
   lleida: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2878?nult=4&det=2",
   jaen: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2876?nult=4&det=2",
-  asturias: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2886?nult=4&det=2"
+  asturias: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2886?nult=4&det=2",
+  guadalajara: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2872?nult=4&det=2"
 };
 const MUNICIPIOS_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/61399?nult=4&det=2";
 const MORTALIDAD_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1482?nult=4&det=2";
@@ -31,7 +32,7 @@ export async function fetchINEData(): Promise<INEDataItem[]> {
 export async function fetchCensoData(): Promise<CensoDataItem[]> {
   try {
     // Fetch data from all URLs
-    const [generalResponse, caceresResponse, badajozResponse, soriaResponse, teruelResponse, huescaResponse, lleidaResponse, jaenResponse, asturiasResponse] = await Promise.all([
+    const [generalResponse, caceresResponse, badajozResponse, soriaResponse, teruelResponse, huescaResponse, lleidaResponse, jaenResponse, asturiasResponse, guadalajaraResponse] = await Promise.all([
       axios.get<INEDataItem[]>(CENSO_API_URLS.general),
       axios.get<INEDataItem[]>(CENSO_API_URLS.caceres),
       axios.get<INEDataItem[]>(CENSO_API_URLS.badajoz),
@@ -40,7 +41,8 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
       axios.get<INEDataItem[]>(CENSO_API_URLS.huesca),
       axios.get<INEDataItem[]>(CENSO_API_URLS.lleida),
       axios.get<INEDataItem[]>(CENSO_API_URLS.jaen),
-      axios.get<INEDataItem[]>(CENSO_API_URLS.asturias)
+      axios.get<INEDataItem[]>(CENSO_API_URLS.asturias),
+      axios.get<INEDataItem[]>(CENSO_API_URLS.guadalajara)
     ]);
 
     // Process general census data
@@ -282,7 +284,34 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
       };
     });
 
-    return [...generalData, ...caceresData, ...badajozData, ...soriaData, ...teruelData, ...huescaData, ...lleidaData, ...jaenData, ...asturiasData];
+    // Process Guadalajara data
+    const guadalajaraData = guadalajaraResponse.data.map(item => {
+      const nombrePartes = item.Nombre.split(". ");
+      let tipo: 'provincia' | 'municipio' = "municipio";
+      let nombreLimpio = nombrePartes[0];
+
+      // Si el nombre es 'Guadalajara' y contiene 'Total habitantes', es un dato provincial
+      if (nombreLimpio === 'Guadalajara' && item.Nombre.includes('Total habitantes')) {
+        tipo = 'provincia';
+      }
+      
+      let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
+      if (item.Nombre.includes('Hombres')) {
+        genero = 'Hombres';
+      } else if (item.Nombre.includes('Mujeres')) {
+        genero = 'Mujeres';
+      }
+      
+      return {
+        ...item,
+        tipo,
+        nombreLimpio,
+        genero,
+        provincia: 'Guadalajara' as const
+      };
+    });
+
+    return [...generalData, ...caceresData, ...badajozData, ...soriaData, ...teruelData, ...huescaData, ...lleidaData, ...jaenData, ...asturiasData, ...guadalajaraData];
   } catch (error) {
     console.error("Error fetching censo data:", error);
     throw new Error("Error al obtener datos del censo");

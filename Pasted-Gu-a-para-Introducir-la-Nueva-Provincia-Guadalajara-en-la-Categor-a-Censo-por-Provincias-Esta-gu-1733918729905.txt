@@ -1,0 +1,114 @@
+Guía para Introducir la Nueva Provincia (Guadalajara) en la Categoría "Censo por Provincias"
+Esta guía detalla los pasos necesarios para agregar Guadalajara a la categoría "Censo por Provincias", permitiendo que los usuarios puedan seleccionar esta provincia, cargar los datos desde su API y visualizarlos en la tabla existente.
+
+1. Preparación de la Configuración
+Añadir Guadalajara al Selector de "Tipo":
+
+Localiza el componente del selector donde se elige la provincia.
+Añade una nueva opción para Guadalajara en el menú desplegable.
+Ejemplo:
+
+Al seleccionar Guadalajara, la aplicación debe asociar esta opción con la URL de la API:
+plaintext
+Copiar código
+https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2872?nult=4&det=2
+Actualizar el Mapeo de URLs:
+
+Añade la URL correspondiente a Guadalajara al objeto que mapea las provincias con sus respectivas URLs.
+Ejemplo del mapeo actualizado:
+
+json
+Copiar código
+{
+  "Cáceres": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2",
+  "Badajoz": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2859?nult=4&det=2",
+  "Soria": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2",
+  "Teruel": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2899?nult=4&det=2",
+  "Huesca": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2875?nult=4&det=2",
+  "Lleida": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2878?nult=4&det=2",
+  "Jaén": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2876?nult=4&det=2",
+  "Asturias": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2886?nult=4&det=2",
+  "Guadalajara": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2872?nult=4&det=2"
+}
+2. Consumir la API de Guadalajara
+Configurar la Llamada a la API:
+
+Crea una función para realizar una solicitud HTTP a la URL correspondiente de Guadalajara.
+Utiliza fetch o axios para realizar la solicitud.
+Procesar la Respuesta de la API:
+
+La API de Guadalajara devuelve datos estructurados de la siguiente manera:
+Nombre: Descripción del dato (p. ej., total de habitantes, hombres, mujeres).
+Data: Conjunto de datos por año.
+Extrae los datos relevantes para mostrarlos en la tabla.
+Ejemplo de datos importantes:
+
+Año 2023:
+Total habitantes: 100,000.
+Hombres: 50,000.
+Mujeres: 50,000.
+3. Integrar los Datos en la Tabla
+Transformar los Datos:
+
+Procesa los datos obtenidos para adaptarlos al formato que espera la tabla.
+La estructura de datos debería ser similar a esta:
+Ejemplo de estructura de datos para la tabla:
+
+json
+Copiar código
+[
+  {
+    "Año": "2023",
+    "Total habitantes": "100,000",
+    "Hombres": "50,000",
+    "Mujeres": "50,000"
+  },
+  {
+    "Año": "2022",
+    "Total habitantes": "102,000",
+    "Hombres": "51,000",
+    "Mujeres": "51,000"
+  }
+]
+Actualizar el Estado de la Aplicación:
+
+Utiliza un estado de React para almacenar los datos procesados y renderizarlos en la tabla.
+Lógica de ejemplo:
+
+javascript
+Copiar código
+const [datosTabla, setDatosTabla] = useState([]);
+
+const cargarDatos = async (provincia) => {
+  const url = urls[provincia];
+  const response = await fetch(url);
+  const data = await response.json();
+  const datosProcesados = procesarDatos(data);
+  setDatosTabla(datosProcesados);
+};
+Renderizar los Datos:
+
+Asegúrate de que el componente de la tabla esté diseñado para recibir y mostrar los datos de Guadalajara correctamente.
+4. Manejo de Errores
+Errores en la Llamada a la API:
+
+Si hay problemas al consultar la API, muestra un mensaje al usuario como: "No se pudieron cargar los datos de Guadalajara. Inténtelo de nuevo más tarde."
+Datos Incompletos o Faltantes:
+
+Si algún valor no está disponible (por ejemplo, null), muestra un indicador como --- o "Dato no disponible" en la tabla.
+5. Pruebas y Validación
+Pruebas Funcionales:
+
+Selecciona Guadalajara en el selector de provincias y verifica que:
+Los datos se carguen correctamente desde la API.
+La tabla muestre la información correcta.
+Pruebas de Usabilidad:
+
+Asegúrate de que los usuarios puedan seleccionar Guadalajara sin problemas y que los datos se muestren de manera clara.
+Pruebas de Compatibilidad:
+
+Verifica que la funcionalidad sea compatible con diferentes navegadores y dispositivos.
+6. Mejoras Futuras
+Visualización de Tendencias:
+
+Agrega gráficos que muestren la evolución de la población de Guadalajara a lo largo de los años.
