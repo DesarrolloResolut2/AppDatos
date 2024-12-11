@@ -1,0 +1,108 @@
+Guía para Introducir la Nueva Provincia (Huesca) en la Categoría "Censo por Provincias"
+A continuación, se detalla cómo añadir la provincia de Huesca a tu aplicación en la categoría "Censo por Provincias". Esto permitirá que los usuarios seleccionen esta provincia desde el selector, carguen los datos de la API correspondiente y los visualicen en la tabla existente.
+
+1. Preparación de la Configuración
+Añadir la Provincia al Selector de "Tipo":
+
+Localiza el componente donde está configurado el selector de provincias.
+Incluye una nueva opción para Huesca en la lista desplegable.
+Ejemplo:
+
+Al seleccionar Huesca, el sistema debe asociar esta selección con su API:
+plaintext
+Copiar código
+https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2875?nult=4&det=2
+Actualizar el Mapeo de URLs por Provincia:
+
+Agrega Huesca al mapa de URLs que se utiliza para gestionar las APIs de las provincias.
+Ejemplo de configuración:
+
+json
+Copiar código
+{
+  "Cáceres": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2",
+  "Badajoz": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2859?nult=4&det=2",
+  "Soria": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2",
+  "Teruel": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2899?nult=4&det=2",
+  "Huesca": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2875?nult=4&det=2"
+}
+2. Consumir la API de Huesca
+Realizar la Llamada a la API:
+
+Al seleccionar Huesca, envía una solicitud HTTP a la URL asignada.
+Utiliza fetch o una biblioteca como axios para manejar la llamada.
+Gestionar la Respuesta de la API:
+
+La API de Huesca proporciona datos estructurados, incluyendo:
+Nombre: Descripción de los datos (total habitantes, hombres, mujeres).
+Data: Valores de población organizados por año.
+Extrae y adapta la información relevante al formato esperado por tu aplicación.
+Ejemplo de datos relevantes:
+
+Año 2023:
+Total habitantes: 221,079.
+Hombres: 112,284.
+Mujeres: 108,795.
+3. Adaptar los Datos a la Tabla
+Transformar los Datos:
+
+Procesa los datos de la API para organizarlos en un formato compatible con tu tabla.
+Estructura ejemplo:
+json
+Copiar código
+[
+  {
+    "Año": "2023",
+    "Total habitantes": "221,079",
+    "Hombres": "112,284",
+    "Mujeres": "108,795"
+  },
+  {
+    "Año": "2022",
+    "Total habitantes": "221,500",
+    "Hombres": "112,400",
+    "Mujeres": "109,100"
+  }
+]
+Actualizar el Estado de los Datos:
+
+Usa useState en React para gestionar los datos dinámicos de la tabla.
+Cambia el estado de los datos al seleccionar Huesca en el selector.
+Ejemplo:
+
+javascript
+Copiar código
+const [datosTabla, setDatosTabla] = useState([]);
+
+const cargarDatos = async (provincia) => {
+  const url = urls[provincia];
+  const response = await fetch(url);
+  const data = await response.json();
+  const datosProcesados = procesarDatos(data);
+  setDatosTabla(datosProcesados);
+};
+Renderizar los Datos en la Tabla:
+
+Asegúrate de que la tabla reciba y muestre los datos adaptados de la API de Huesca.
+4. Gestión de Errores y Casos Especiales
+Errores en la API:
+
+Si la API de Huesca no responde, muestra un mensaje de error como: "No se pudieron cargar los datos para Huesca. Por favor, inténtalo más tarde."
+Datos Faltantes o Nulos:
+
+Si un valor es null o está marcado como secreto, muestra un indicador como --- o "Información no disponible".
+5. Pruebas y Validación
+Pruebas Funcionales:
+
+Selecciona Huesca en el selector y verifica que los datos se carguen y muestren correctamente.
+Confirma que los valores coincidan con los retornados por la API.
+Pruebas de Usabilidad:
+
+Asegúrate de que el cambio entre provincias sea intuitivo y dinámico.
+Pruebas de Compatibilidad:
+
+Valida la funcionalidad en diferentes navegadores y dispositivos.
+6. Expansión Futura
+Añadir Nuevas Provincias:
+
+Utiliza el mismo procedimiento para integrar más provincias en el futuro.
