@@ -45,7 +45,8 @@ export function PdfDocumentsPage() {
     queryFn: async () => {
       const response = await fetch('/api/pdf-documents');
       if (!response.ok) {
-        throw new Error('Error al cargar los documentos');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al cargar los documentos');
       }
       return response.json();
     },
@@ -82,12 +83,18 @@ export function PdfDocumentsPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al eliminar el documento');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al eliminar el documento');
       }
 
       await queryClient.invalidateQueries({ queryKey: ["pdfDocuments"] });
+      if (selectedPdf === id) {
+        setSelectedPdf(null);
+        setPdfContent(null);
+      }
       setError(null);
     } catch (error) {
+      console.error('Error al eliminar:', error);
       setError("Error al eliminar el documento. Por favor, inténtelo de nuevo.");
     } finally {
       setIsDeleting(false);
@@ -97,16 +104,33 @@ export function PdfDocumentsPage() {
   const handleView = async (id: number) => {
     try {
       setIsLoadingContent(true);
+      setError(null);
       setSelectedPdf(id);
+      
+      console.log(`Solicitando contenido del PDF ${id}...`);
       const response = await fetch(`/api/pdf-documents/${id}/content`);
+      
       if (!response.ok) {
-        throw new Error('Error al obtener el contenido del PDF');
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.details || 'Error al obtener el contenido del PDF');
       }
+
       const content = await response.json();
+      console.log(`Contenido del PDF ${id} recibido:`, { 
+        fileName: content.fileName,
+        numPages: content.numPages,
+        textLength: content.text?.length 
+      });
+
+      if (!content.text) {
+        throw new Error('El PDF está vacío o no se pudo extraer el texto');
+      }
+
       setPdfContent(content);
     } catch (error) {
-      console.error('Error:', error);
-      setError('Error al cargar el contenido del PDF');
+      console.error('Error al cargar el PDF:', error);
+      setError(error instanceof Error ? error.message : 'Error al cargar el contenido del PDF');
+      setPdfContent(null);
     } finally {
       setIsLoadingContent(false);
     }
@@ -175,9 +199,10 @@ export function PdfDocumentsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleView(doc.id)}
+                          disabled={isLoadingContent}
                         >
                           <FileText className="h-4 w-4 mr-1" />
-                          Ver PDF
+                          {isLoadingContent && selectedPdf === doc.id ? 'Cargando...' : 'Ver PDF'}
                         </Button>
                         <Button
                           variant="destructive"

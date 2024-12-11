@@ -3,13 +3,13 @@ import { eq } from "drizzle-orm";
 import axios from "axios";
 import { db } from "../db";
 import { importedData, pdfDocuments } from "../db/schema";
-// @ts-ignore
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 
 // Configuración básica para pdf-parse
 const PDF_PARSE_OPTIONS = {
-  max: 0,
-  pagerender: null,
+  max: 0
 };
 
 export function registerRoutes(app: Express) {
@@ -146,20 +146,37 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "PDF no encontrado" });
       }
 
-      const buffer = Buffer.from(document[0].fileContent, 'base64');
-      
-      if (buffer.length === 0) {
-        return res.status(400).json({ error: "PDF vacío" });
+      try {
+        console.log('Procesando PDF:', document[0].fileName);
+        const buffer = Buffer.from(document[0].fileContent, 'base64');
+        
+        if (buffer.length === 0) {
+          console.error('Buffer vacío para el PDF:', document[0].fileName);
+          return res.status(400).json({ error: "PDF vacío o corrupto" });
+        }
+
+        console.log('Tamaño del buffer:', buffer.length, 'bytes');
+        const data = await pdfParse(buffer, PDF_PARSE_OPTIONS);
+        console.log('PDF procesado exitosamente');
+
+        if (!data || !data.text) {
+          console.error('No se pudo extraer texto del PDF');
+          return res.status(400).json({ error: "No se pudo extraer el contenido del PDF" });
+        }
+
+        res.json({
+          fileName: document[0].fileName,
+          text: data.text,
+          numPages: data.numpages || 1,
+          info: data.info || {}
+        });
+      } catch (parseError) {
+        console.error('Error al procesar PDF:', parseError);
+        res.status(500).json({ 
+          error: "Error al procesar el PDF",
+          details: parseError instanceof Error ? parseError.message : "Error desconocido en el procesamiento"
+        });
       }
-
-      const data = await pdfParse(buffer, PDF_PARSE_OPTIONS);
-
-      res.json({
-        fileName: document[0].fileName,
-        text: data.text || '',
-        numPages: data.numpages || 1,
-        info: data.info || {}
-      });
     } catch (error) {
       console.error("Error al procesar PDF:", error);
       res.status(500).json({ 

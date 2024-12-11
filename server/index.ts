@@ -19,22 +19,13 @@ async function startServer() {
   try {
     const app = express();
     
+    log('Iniciando servidor Express...');
+    
     // Configuración básica de Express
     app.use(express.json({ limit: '50mb' }));
     app.use(express.urlencoded({ extended: false, limit: '50mb' }));
-
-    // Configurar CORS
-    app.use((req, res, next) => {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-      
-      if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-      } else {
-        next();
-      }
-    });
+    
+    log('Middleware básico configurado');
 
     // Logging middleware
     app.use((req, res, next) => {
@@ -107,10 +98,11 @@ async function startServer() {
     server.listen(Number(PORT), HOST, () => {
       log(`Servidor iniciado en http://${HOST}:${PORT}`);
       log(`Servidor WebSocket disponible en ws://${HOST}:${PORT}/ws`);
+      log('Estado del servidor: Listo para recibir conexiones');
     });
 
     // Manejar errores del servidor
-    server.on('error', (error) => {
+    server.on('error', (error: Error) => {
       console.error('Error en el servidor:', error);
       process.exit(1);
     });
