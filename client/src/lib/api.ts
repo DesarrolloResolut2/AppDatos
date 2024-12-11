@@ -6,7 +6,8 @@ const CENSO_API_URLS = {
   general: "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/2877?nult=4&det=2",
   caceres: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2",
   badajoz: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2859?nult=4&det=2",
-  soria: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2"
+  soria: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2",
+  teruel: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2899?nult=4&det=2"
 };
 const MUNICIPIOS_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/61399?nult=4&det=2";
 const MORTALIDAD_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1482?nult=4&det=2";
@@ -26,11 +27,12 @@ export async function fetchINEData(): Promise<INEDataItem[]> {
 export async function fetchCensoData(): Promise<CensoDataItem[]> {
   try {
     // Fetch data from all URLs
-    const [generalResponse, caceresResponse, badajozResponse, soriaResponse] = await Promise.all([
+    const [generalResponse, caceresResponse, badajozResponse, soriaResponse, teruelResponse] = await Promise.all([
       axios.get<INEDataItem[]>(CENSO_API_URLS.general),
       axios.get<INEDataItem[]>(CENSO_API_URLS.caceres),
       axios.get<INEDataItem[]>(CENSO_API_URLS.badajoz),
-      axios.get<INEDataItem[]>(CENSO_API_URLS.soria)
+      axios.get<INEDataItem[]>(CENSO_API_URLS.soria),
+      axios.get<INEDataItem[]>(CENSO_API_URLS.teruel)
     ]);
 
     // Process general census data
@@ -136,8 +138,35 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
       };
     });
 
+    // Process Teruel data
+    const teruelData = teruelResponse.data.map(item => {
+      const nombrePartes = item.Nombre.split(". ");
+      let tipo: 'provincia' | 'municipio' = "municipio";
+      let nombreLimpio = nombrePartes[0];
+
+      // Si el nombre es 'Teruel' y contiene 'Total habitantes', es un dato provincial
+      if (nombreLimpio === 'Teruel' && item.Nombre.includes('Total habitantes')) {
+        tipo = 'provincia';
+      }
+      
+      let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
+      if (item.Nombre.includes('Hombres')) {
+        genero = 'Hombres';
+      } else if (item.Nombre.includes('Mujeres')) {
+        genero = 'Mujeres';
+      }
+      
+      return {
+        ...item,
+        tipo,
+        nombreLimpio,
+        genero,
+        provincia: 'Teruel' as const
+      };
+    });
+
     // Combine all datasets
-    return [...generalData, ...caceresData, ...badajozData, ...soriaData];
+    return [...generalData, ...caceresData, ...badajozData, ...soriaData, ...teruelData];
   } catch (error) {
     console.error("Error fetching censo data:", error);
     throw new Error("Error al obtener datos del censo");
