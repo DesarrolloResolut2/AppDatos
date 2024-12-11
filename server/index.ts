@@ -2,7 +2,7 @@ import express, { type Request, type Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic } from "./vite";
 import { createServer } from "http";
-import pdfRouter from "./routes/pdf";
+
 function log(message: string) {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "2-digit",
