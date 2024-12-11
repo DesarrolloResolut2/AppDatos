@@ -2,15 +2,8 @@ import { type Express, type Request, type Response } from "express";
 import { eq } from "drizzle-orm";
 import axios from "axios";
 import { db } from "../db";
-import { importedData, pdfDocuments } from "../db/schema";
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
+import { importedData } from "../db/schema";
 
-// Configuración básica para pdf-parse
-const PDF_PARSE_OPTIONS = {
-  max: 0
-};
 
 export function registerRoutes(app: Express) {
   // Add CORS headers
@@ -80,129 +73,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // PDF Document Routes
-  app.post("/api/pdf-documents", async (req: Request, res: Response) => {
-    try {
-      const { fileName, fileContent, fileSize, mimeType } = req.body;
-
-      if (!fileName || !fileContent || !fileSize || !mimeType) {
-        return res.status(400).json({ error: "Faltan campos requeridos" });
-      }
-
-      if (mimeType !== 'application/pdf') {
-        return res.status(400).json({ error: "El archivo debe ser un PDF" });
-      }
-
-      // Guardamos el contenido en base64 directamente
-      const result = await db.insert(pdfDocuments).values({
-        fileName,
-        fileContent: fileContent,  // contenido en base64
-        fileSize,
-        mimeType,
-      }).returning();
-
-      res.json({ 
-        message: "PDF guardado correctamente",
-        document: result[0]
-      });
-    } catch (error) {
-      console.error("Error al guardar PDF:", error);
-      res.status(500).json({ 
-        error: "Error al guardar el PDF",
-        details: error instanceof Error ? error.message : "Error desconocido"
-      });
-    }
-  });
-
-  app.get("/api/pdf-documents", async (_req: Request, res: Response) => {
-    try {
-      const result = await db.select({
-        id: pdfDocuments.id,
-        fileName: pdfDocuments.fileName,
-        fileSize: pdfDocuments.fileSize,
-        uploadedAt: pdfDocuments.uploadedAt,
-      }).from(pdfDocuments).orderBy(pdfDocuments.uploadedAt);
-      
-      res.json(result);
-    } catch (error) {
-      console.error("Error al obtener PDFs:", error);
-      res.status(500).json({ 
-        error: "Error al obtener los PDFs",
-        details: error instanceof Error ? error.message : "Error desconocido"
-      });
-    }
-  });
-
-  app.get("/api/pdf-documents/:id/content", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ error: "ID inválido" });
-      }
-
-      const document = await db.select().from(pdfDocuments).where(eq(pdfDocuments.id, id)).limit(1);
-      
-      if (!document.length || !document[0].fileContent) {
-        return res.status(404).json({ error: "PDF no encontrado" });
-      }
-
-      try {
-        console.log('Procesando PDF:', document[0].fileName);
-        const buffer = Buffer.from(document[0].fileContent, 'base64');
-        
-        if (buffer.length === 0) {
-          console.error('Buffer vacío para el PDF:', document[0].fileName);
-          return res.status(400).json({ error: "PDF vacío o corrupto" });
-        }
-
-        console.log('Tamaño del buffer:', buffer.length, 'bytes');
-        const data = await pdfParse(buffer, PDF_PARSE_OPTIONS);
-        console.log('PDF procesado exitosamente');
-
-        if (!data || !data.text) {
-          console.error('No se pudo extraer texto del PDF');
-          return res.status(400).json({ error: "No se pudo extraer el contenido del PDF" });
-        }
-
-        res.json({
-          fileName: document[0].fileName,
-          text: data.text,
-          numPages: data.numpages || 1,
-          info: data.info || {}
-        });
-      } catch (parseError) {
-        console.error('Error al procesar PDF:', parseError);
-        res.status(500).json({ 
-          error: "Error al procesar el PDF",
-          details: parseError instanceof Error ? parseError.message : "Error desconocido en el procesamiento"
-        });
-      }
-    } catch (error) {
-      console.error("Error al procesar PDF:", error);
-      res.status(500).json({ 
-        error: "Error al procesar el PDF",
-        details: error instanceof Error ? error.message : "Error desconocido"
-      });
-    }
-  });
-
-  app.delete("/api/pdf-documents/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ error: "ID inválido" });
-      }
-
-      await db.delete(pdfDocuments).where(eq(pdfDocuments.id, id));
-      res.json({ message: "PDF eliminado correctamente" });
-    } catch (error) {
-      console.error("Error al eliminar PDF:", error);
-      res.status(500).json({ 
-        error: "Error al eliminar el PDF",
-        details: error instanceof Error ? error.message : "Error desconocido"
-      });
-    }
-  });
+  
 
   // INE Data Routes
   app.get("/api/ine-data", async (_req: Request, res: Response) => {
