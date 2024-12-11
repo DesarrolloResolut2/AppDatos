@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { NatalidadDataTable } from "../components/NatalidadDataTable";
-import { fetchNatalidadData } from "../lib/api";
+import { fetchNatalidadData, exportProvincialData } from "../lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -17,6 +19,8 @@ import { Card } from "@/components/ui/card";
 
 export function NatalidadPage() {
   const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["natalidadData"],
@@ -78,6 +82,35 @@ export function NatalidadPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {selectedProvincia !== "todas" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  disabled={isExporting}
+                  onClick={async () => {
+                    try {
+                      setIsExporting(true);
+                      await exportProvincialData(selectedProvincia);
+                      toast({
+                        title: "Exportación exitosa",
+                        description: `Los datos de ${selectedProvincia} han sido exportados correctamente.`,
+                      });
+                    } catch (error) {
+                      toast({
+                        variant: "destructive",
+                        title: "Error en la exportación",
+                        description: "No se pudieron exportar los datos. Por favor, inténtalo de nuevo.",
+                      });
+                    } finally {
+                      setIsExporting(false);
+                    }
+                  }}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {isExporting ? "Exportando..." : "Exportar datos"}
+                </Button>
+              )}
             </div>
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">

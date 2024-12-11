@@ -99,4 +99,47 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: "Error al obtener datos de natalidad del INE" });
     }
   });
+
+  // Export Provincial Data Route
+  app.get("/api/export-provincial-data/:provincia", async (req: Request, res: Response) => {
+    try {
+      const provincia = req.params.provincia;
+      
+      // Obtener datos de diferentes fuentes
+      const [natalidadResponse, ineResponse, mortalidadResponse] = await Promise.all([
+        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1469?nult=4&det=2"),
+        axios.get("https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2074?nult=8"),
+        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1234?nult=4")
+      ]);
+
+      // Filtrar datos por provincia
+      const provincialData = {
+        provincia,
+        natalidad: natalidadResponse.data.filter((item: any) => 
+          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
+        ),
+        actividadParoEmpleo: ineResponse.data.filter((item: any) => 
+          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
+        ),
+        mortalidad: mortalidadResponse.data.filter((item: any) => 
+          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
+        )
+      };
+
+      // Generar nombre del archivo
+      const fileName = `datos_${provincia.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+      
+      // Configurar headers para la descarga
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+      
+      res.json(provincialData);
+    } catch (error) {
+      console.error("Error exporting provincial data:", error);
+      res.status(500).json({ 
+        error: "Error al exportar datos provinciales",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
 }

@@ -446,3 +446,30 @@ export async function deleteImportedData(id: number): Promise<void> {
     throw new Error("Error al eliminar el archivo");
   }
 }
+
+export async function exportProvincialData(provincia: string): Promise<void> {
+  try {
+    const response = await axios.get(`/api/export-provincial-data/${encodeURIComponent(provincia)}`, {
+      responseType: 'blob'
+    });
+    
+    // Crear un objeto URL del blob
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    
+    // Crear un elemento <a> temporal
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `datos_${provincia.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`);
+    
+    // Añadir al DOM, hacer clic y eliminar
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Liberar el objeto URL
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error exporting provincial data:", error);
+    throw new Error("Error al exportar los datos provinciales");
+  }
+}
