@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import axios from "axios";
 import { db } from "../db";
 import { importedData } from "../db/schema";
+import pdfRouter from "./routes/pdf";
 
 
 export function registerRoutes(app: Express) {
@@ -13,6 +14,9 @@ export function registerRoutes(app: Express) {
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
   });
+
+  // PDF Routes
+  app.use('/api/pdf', pdfRouter);
 
   // Excel Import Routes
   app.post("/api/import-excel", async (req: Request, res: Response) => {
