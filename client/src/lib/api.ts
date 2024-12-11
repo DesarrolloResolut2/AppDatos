@@ -54,8 +54,13 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
     // Process Cáceres data
     const caceresData = caceresResponse.data.map(item => {
       const nombrePartes = item.Nombre.split(". ");
-      const tipo: 'provincia' | 'municipio' = "provincia";
-      const nombreLimpio = nombrePartes[0]; // Extraer el nombre del municipio
+      let tipo: 'provincia' | 'municipio' = "municipio";
+      let nombreLimpio = nombrePartes[0];
+
+      // Si el nombre es 'Cáceres' y contiene 'Total habitantes', es un dato provincial
+      if (nombreLimpio === 'Cáceres' && item.Nombre.includes('Total habitantes')) {
+        tipo = 'provincia';
+      }
       
       let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
       if (item.Nombre.includes('Hombres')) {
