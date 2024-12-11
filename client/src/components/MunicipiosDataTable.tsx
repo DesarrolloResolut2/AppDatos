@@ -17,9 +17,9 @@ export function MunicipiosDataTable({ data }: MunicipiosDataTableProps) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.flatMap((item) => 
-          item.Data.map((dataItem) => (
-            <TableRow key={`${item.provincia}-${item.clasificacion}-${dataItem.NombrePeriodo}`}>
+        {data.flatMap((item, itemIndex) => 
+          item.Data.map((dataItem, dataIndex) => (
+            <TableRow key={`${item.provincia}-${item.clasificacion}-${dataItem.NombrePeriodo}-${itemIndex}-${dataIndex}`}>
               <TableCell>{item.provincia}</TableCell>
               <TableCell>{item.clasificacion}</TableCell>
               <TableCell>{dataItem.NombrePeriodo}</TableCell>
