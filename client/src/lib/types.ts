@@ -23,7 +23,7 @@ export interface CensoDataItem extends INEDataItem {
   nombreLimpio: string;
   genero: 'Hombres' | 'Mujeres' | 'Total';
   Data: DataPoint[];
-  provincia?: 'León' | 'Cáceres';
+  provincia?: 'León' | 'Cáceres' | 'Badajoz';
 }
 
 export interface PIBDataItem extends INEDataItem {

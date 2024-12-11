@@ -4,7 +4,8 @@ import type { INEDataItem, CensoDataItem, DataPoint } from "./types";
 const TASAS_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3996?nult=4&det=2";
 const CENSO_API_URLS = {
   general: "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/2877?nult=4&det=2",
-  caceres: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2"
+  caceres: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2",
+  badajoz: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2859?nult=4&det=2"
 };
 const MUNICIPIOS_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/61399?nult=4&det=2";
 const MORTALIDAD_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1482?nult=4&det=2";
@@ -23,10 +24,11 @@ export async function fetchINEData(): Promise<INEDataItem[]> {
 
 export async function fetchCensoData(): Promise<CensoDataItem[]> {
   try {
-    // Fetch data from both URLs
-    const [generalResponse, caceresResponse] = await Promise.all([
+    // Fetch data from all URLs
+    const [generalResponse, caceresResponse, badajozResponse] = await Promise.all([
       axios.get<INEDataItem[]>(CENSO_API_URLS.general),
-      axios.get<INEDataItem[]>(CENSO_API_URLS.caceres)
+      axios.get<INEDataItem[]>(CENSO_API_URLS.caceres),
+      axios.get<INEDataItem[]>(CENSO_API_URLS.badajoz)
     ]);
 
     // Process general census data
@@ -78,8 +80,35 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
       };
     });
 
-    // Combine both datasets
-    return [...generalData, ...caceresData];
+    // Process Badajoz data
+    const badajozData = badajozResponse.data.map(item => {
+      const nombrePartes = item.Nombre.split(". ");
+      let tipo: 'provincia' | 'municipio' = "municipio";
+      let nombreLimpio = nombrePartes[0];
+
+      // Si el nombre es 'Badajoz' y contiene 'Total habitantes', es un dato provincial
+      if (nombreLimpio === 'Badajoz' && item.Nombre.includes('Total habitantes')) {
+        tipo = 'provincia';
+      }
+      
+      let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
+      if (item.Nombre.includes('Hombres')) {
+        genero = 'Hombres';
+      } else if (item.Nombre.includes('Mujeres')) {
+        genero = 'Mujeres';
+      }
+      
+      return {
+        ...item,
+        tipo,
+        nombreLimpio,
+        genero,
+        provincia: 'Badajoz' as const
+      };
+    });
+
+    // Combine all datasets
+    return [...generalData, ...caceresData, ...badajozData];
   } catch (error) {
     console.error("Error fetching censo data:", error);
     throw new Error("Error al obtener datos del censo");
