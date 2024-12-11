@@ -131,9 +131,15 @@ export function registerRoutes(app: Express) {
       };
 
       // Obtener datos de manera secuencial para mejor control de errores
+      console.log('Iniciando recolección de datos para provincia:', provincia);
+      
       const results = await Promise.all(
         Object.entries(endpoints).map(async ([key, url]) => {
           const data = await fetchData(url, key);
+          console.log(`Datos obtenidos para ${key}:`, {
+            total: Array.isArray(data) ? data.length : 0,
+            muestra: Array.isArray(data) ? data.slice(0, 2) : null
+          });
           return [key, data];
         })
       );
@@ -143,12 +149,26 @@ export function registerRoutes(app: Express) {
         provincia,
         fecha_exportacion: new Date().toISOString(),
         ...Object.fromEntries(
-          results.map(([key, data]) => [
-            key,
-            Array.isArray(data) ? data.filter((item: any) => 
-              item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
-            ) : []
-          ])
+          results.map(([key, data]) => {
+            const filteredData = Array.isArray(data) ? data.filter((item: any) => {
+              if (!item.Nombre) {
+                console.log(`Item sin nombre en ${key}:`, item);
+                return false;
+              }
+              const matchesProvincia = item.Nombre.toLowerCase().includes(provincia.toLowerCase());
+              if (matchesProvincia) {
+                console.log(`Encontrado dato para ${provincia} en ${key}:`, item.Nombre);
+              }
+              return matchesProvincia;
+            }) : [];
+            
+            console.log(`Datos filtrados para ${key}:`, {
+              total: filteredData.length,
+              muestra: filteredData.slice(0, 2)
+            });
+            
+            return [key, filteredData];
+          })
         )
       };
 
