@@ -27,33 +27,9 @@ export function NatalidadPage() {
 
   const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
 
-  const { data, isLoading, error } = useQuery<{ provincia: string; year: number; valor: number }[]>({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["natalidadData"],
-    queryFn: async () => {
-      const response = await fetch("/api/natalidad-data");
-      if (!response.ok) {
-        throw new Error('Error al obtener datos de natalidad');
-      }
-      const jsonData = await response.json();
-      const processedData: { provincia: string; year: number; valor: number }[] = [];
-      
-      jsonData.forEach((item: INENatalidadResponse) => {
-        const parts = item.Nombre.split(".");
-        const provincia = parts[1]?.trim() || "Desconocida";
-        
-        item.Data
-          .filter(d => !d.Secreto)
-          .forEach(d => {
-            processedData.push({
-              provincia,
-              year: d.Anyo,
-              valor: d.Valor
-            });
-          });
-      });
-      
-      return processedData;
-    },
+    queryFn: fetchNatalidadData,
   });
 
   // Extract unique years from data

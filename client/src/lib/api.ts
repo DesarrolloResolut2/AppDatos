@@ -6,6 +6,7 @@ const CENSO_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/
 const MUNICIPIOS_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/61399?nult=4&det=2";
 const MORTALIDAD_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1482?nult=4&det=2";
 
+const NATALIDAD_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1469?nult=4&det=2";
 const PIB_API_URL = "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/67284?nult=4&det=2";
 export async function fetchINEData(): Promise<INEDataItem[]> {
   try {
@@ -69,6 +70,33 @@ export async function fetchMortalidadData(): Promise<MortalidadDataItem[]> {
   } catch (error) {
     console.error("Error fetching mortalidad data:", error);
     throw new Error("Error al obtener datos de mortalidad");
+  }
+}
+export interface NatalidadDataItem {
+  provincia: string;
+  year: number;
+  valor: number;
+}
+
+export async function fetchNatalidadData(): Promise<NatalidadDataItem[]> {
+  try {
+    const response = await axios.get<INEDataItem[]>(NATALIDAD_API_URL);
+    return response.data.flatMap(item => {
+      // El nombre viene en formato "Tasa Bruta de Natalidad. Nombre de Provincia"
+      const parts = item.Nombre.split(".");
+      const provincia = parts[1]?.trim() || "Desconocida";
+      
+      return item.Data
+        .filter(d => !d.Secreto)
+        .map(d => ({
+          provincia,
+          year: d.Anyo,
+          valor: d.Valor
+        }));
+    });
+  } catch (error) {
+    console.error("Error fetching natalidad data:", error);
+    throw new Error("Error al obtener datos de natalidad");
   }
 }
 export interface MunicipiosDataItem extends INEDataItem {
