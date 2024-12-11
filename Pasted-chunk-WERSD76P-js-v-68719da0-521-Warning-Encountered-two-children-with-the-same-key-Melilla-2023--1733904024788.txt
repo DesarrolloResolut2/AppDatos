@@ -1,0 +1,130 @@
+chunk-WERSD76P.js?v=68719da0:521 Warning: Encountered two children with the same key, `Melilla-2023`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at tbody
+    at _c5 (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/ui/table.tsx:53:12)
+    at table
+    at div
+    at _c (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/ui/table.tsx:20:11)
+    at MunicipiosDataTable (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/MunicipiosDataTable.tsx:18:39)
+    at div
+    at div
+    at MunicipiosPage (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/pages/MunicipiosPage.tsx:36:53)
+    at Route (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/wouter.js?v=68719da0:323:16)
+    at Switch (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/wouter.js?v=68719da0:379:17)
+    at Router
+    at QueryClientProvider (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/@tanstack_react-query.js?v=68719da0:2797:3)
+printWarning @ chunk-WERSD76P.js?v=68719da0:521
+error @ chunk-WERSD76P.js?v=68719da0:505
+warnOnInvalidKey @ chunk-WERSD76P.js?v=68719da0:10219
+reconcileChildrenArray @ chunk-WERSD76P.js?v=68719da0:10235
+reconcileChildFibers2 @ chunk-WERSD76P.js?v=68719da0:10559
+reconcileChildren @ chunk-WERSD76P.js?v=68719da0:14290
+updateHostComponent @ chunk-WERSD76P.js?v=68719da0:14807
+beginWork @ chunk-WERSD76P.js?v=68719da0:15935
+beginWork$1 @ chunk-WERSD76P.js?v=68719da0:19753
+performUnitOfWork @ chunk-WERSD76P.js?v=68719da0:19198
+workLoopSync @ chunk-WERSD76P.js?v=68719da0:19137
+renderRootSync @ chunk-WERSD76P.js?v=68719da0:19116
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=68719da0:18874
+flushSyncCallbacks @ chunk-WERSD76P.js?v=68719da0:9119
+(anonymous) @ chunk-WERSD76P.js?v=68719da0:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=68719da0:554
+flush @ @tanstack_react-query.js?v=68719da0:568
+batch @ @tanstack_react-query.js?v=68719da0:586
+dispatch_fn @ @tanstack_react-query.js?v=68719da0:995
+setData @ @tanstack_react-query.js?v=68719da0:695
+onSuccess @ @tanstack_react-query.js?v=68719da0:896
+resolve @ @tanstack_react-query.js?v=68719da0:455
+Promise.then
+run @ @tanstack_react-query.js?v=68719da0:497
+start @ @tanstack_react-query.js?v=68719da0:535
+fetch @ @tanstack_react-query.js?v=68719da0:925
+executeFetch_fn @ @tanstack_react-query.js?v=68719da0:2212
+onSubscribe @ @tanstack_react-query.js?v=68719da0:1899
+subscribe @ @tanstack_react-query.js?v=68719da0:24
+(anonymous) @ @tanstack_react-query.js?v=68719da0:3014
+subscribeToStore @ chunk-WERSD76P.js?v=68719da0:11984
+commitHookEffectListMount @ chunk-WERSD76P.js?v=68719da0:16915
+commitPassiveMountOnFiber @ chunk-WERSD76P.js?v=68719da0:18156
+commitPassiveMountEffects_complete @ chunk-WERSD76P.js?v=68719da0:18129
+commitPassiveMountEffects_begin @ chunk-WERSD76P.js?v=68719da0:18119
+commitPassiveMountEffects @ chunk-WERSD76P.js?v=68719da0:18109
+flushPassiveEffectsImpl @ chunk-WERSD76P.js?v=68719da0:19490
+flushPassiveEffects @ chunk-WERSD76P.js?v=68719da0:19447
+commitRootImpl @ chunk-WERSD76P.js?v=68719da0:19416
+commitRoot @ chunk-WERSD76P.js?v=68719da0:19277
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=68719da0:18895
+flushSyncCallbacks @ chunk-WERSD76P.js?v=68719da0:9119
+(anonymous) @ chunk-WERSD76P.js?v=68719da0:18627Understand this errorAI
+chunk-WERSD76P.js?v=68719da0:521 Warning: Encountered two children with the same key, `Melilla-2022`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at tbody
+    at _c5 (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/ui/table.tsx:53:12)
+    at table
+    at div
+    at _c (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/ui/table.tsx:20:11)
+    at MunicipiosDataTable (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/MunicipiosDataTable.tsx:18:39)
+    at div
+    at div
+    at MunicipiosPage (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/pages/MunicipiosPage.tsx:36:53)
+    at Route (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/wouter.js?v=68719da0:323:16)
+    at Switch (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/wouter.js?v=68719da0:379:17)
+    at Router
+    at QueryClientProvider (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/@tanstack_react-query.js?v=68719da0:2797:3)
+printWarning @ chunk-WERSD76P.js?v=68719da0:521
+error @ chunk-WERSD76P.js?v=68719da0:505
+warnOnInvalidKey @ chunk-WERSD76P.js?v=68719da0:10219
+reconcileChildrenArray @ chunk-WERSD76P.js?v=68719da0:10235
+reconcileChildFibers2 @ chunk-WERSD76P.js?v=68719da0:10559
+reconcileChildren @ chunk-WERSD76P.js?v=68719da0:14290
+updateHostComponent @ chunk-WERSD76P.js?v=68719da0:14807
+beginWork @ chunk-WERSD76P.js?v=68719da0:15935
+beginWork$1 @ chunk-WERSD76P.js?v=68719da0:19753
+performUnitOfWork @ chunk-WERSD76P.js?v=68719da0:19198
+workLoopSync @ chunk-WERSD76P.js?v=68719da0:19137
+renderRootSync @ chunk-WERSD76P.js?v=68719da0:19116
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=68719da0:18874
+flushSyncCallbacks @ chunk-WERSD76P.js?v=68719da0:9119
+(anonymous) @ chunk-WERSD76P.js?v=68719da0:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=68719da0:554
+flush @ @tanstack_react-query.js?v=68719da0:568
+batch @ @tanstack_react-query.js?v=68719da0:586
+dispatch_fn @ @tanstack_react-query.js?v=68719da0:995
+setData @ @tanstack_react-query.js?v=68719da0:695
+onSuccess @ @tanstack_react-query.js?v=68719da0:896
+resolve @ @tanstack_react-query.js?v=68719da0:455
+Promise.then
+run @ @tanstack_react-query.js?v=68719da0:497
+start @ @tanstack_react-query.js?v=68719da0:535
+fetch @ @tanstack_react-query.js?v=68719da0:925
+executeFetch_fn @ @tanstack_react-query.js?v=68719da0:2212
+onSubscribe @ @tanstack_react-query.js?v=68719da0:1899
+subscribe @ @tanstack_react-query.js?v=68719da0:24
+(anonymous) @ @tanstack_react-query.js?v=68719da0:3014
+subscribeToStore @ chunk-WERSD76P.js?v=68719da0:11984
+commitHookEffectListMount @ chunk-WERSD76P.js?v=68719da0:16915
+commitPassiveMountOnFiber @ chunk-WERSD76P.js?v=68719da0:18156
+commitPassiveMountEffects_complete @ chunk-WERSD76P.js?v=68719da0:18129
+commitPassiveMountEffects_begin @ chunk-WERSD76P.js?v=68719da0:18119
+commitPassiveMountEffects @ chunk-WERSD76P.js?v=68719da0:18109
+flushPassiveEffectsImpl @ chunk-WERSD76P.js?v=68719da0:19490
+flushPassiveEffects @ chunk-WERSD76P.js?v=68719da0:19447
+commitRootImpl @ chunk-WERSD76P.js?v=68719da0:19416
+commitRoot @ chunk-WERSD76P.js?v=68719da0:19277
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=68719da0:18895
+flushSyncCallbacks @ chunk-WERSD76P.js?v=68719da0:9119
+(anonymous) @ chunk-WERSD76P.js?v=68719da0:18627Understand this errorAI
+chunk-WERSD76P.js?v=68719da0:521 Warning: Encountered two children with the same key, `Melilla-2021`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at tbody
+    at _c5 (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/ui/table.tsx:53:12)
+    at table
+    at div
+    at _c (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/ui/table.tsx:20:11)
+    at MunicipiosDataTable (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/components/MunicipiosDataTable.tsx:18:39)
+    at div
+    at div
+    at MunicipiosPage (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/src/pages/MunicipiosPage.tsx:36:53)
+    at Route (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/wouter.js?v=68719da0:323:16)
+    at Switch (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/wouter.js?v=68719da0:379:17)
+    at Router
+    at QueryClientProvider (https://86fa591e-a55e-4ecc-89c6-aafa90cf5dae-00-8dldfffhru5x.kirk.replit.dev/@fs/home/runner/TablaDatosReact/node_modules/.vite/deps/@tanstack_react-query.js?v=68719da0:2797:3)
