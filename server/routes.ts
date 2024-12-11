@@ -104,35 +104,61 @@ export function registerRoutes(app: Express) {
   app.get("/api/export-provincial-data/:provincia", async (req: Request, res: Response) => {
     try {
       const provincia = req.params.provincia;
+      console.log(`Iniciando exportación de datos para la provincia: ${provincia}`);
       
-      // Obtener datos de diferentes fuentes
-      const [natalidadResponse, ineResponse, mortalidadResponse, censoResponse, pibResponse] = await Promise.all([
-        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1469?nult=4&det=2"),
-        axios.get("https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2074?nult=8"),
-        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1234?nult=4"),
-        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3001?nult=4"),
-        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3002?nult=4")
-      ]);
+      // Definir URLs y realizar peticiones de manera más controlada
+      const endpoints = {
+        natalidad: "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1469?nult=4&det=2",
+        actividadParoEmpleo: "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2074?nult=8",
+        mortalidad: "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1234?nult=4",
+        censo: "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3001?nult=1",
+        pib: "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3002?nult=1"
+      };
 
-      // Filtrar datos por provincia
+      const fetchData = async (url: string, categoria: string) => {
+        try {
+          console.log(`Obteniendo datos de ${categoria} desde ${url}`);
+          const response = await axios.get(url);
+          if (!response.data) {
+            console.log(`No se encontraron datos para ${categoria}`);
+            return [];
+          }
+          return response.data;
+        } catch (error) {
+          console.error(`Error al obtener datos de ${categoria}:`, error);
+          return [];
+        }
+      };
+
+      // Obtener datos de manera secuencial para mejor control de errores
+      const results = await Promise.all(
+        Object.entries(endpoints).map(async ([key, url]) => {
+          const data = await fetchData(url, key);
+          return [key, data];
+        })
+      );
+
+      // Construir objeto de datos provinciales
       const provincialData = {
         provincia,
-        natalidad: natalidadResponse.data.filter((item: any) => 
-          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
-        ),
-        actividadParoEmpleo: ineResponse.data.filter((item: any) => 
-          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
-        ),
-        mortalidad: mortalidadResponse.data.filter((item: any) => 
-          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
-        ),
-        censo: censoResponse.data.filter((item: any) => 
-          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
-        ),
-        pib: pibResponse.data.filter((item: any) => 
-          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
+        fecha_exportacion: new Date().toISOString(),
+        ...Object.fromEntries(
+          results.map(([key, data]) => [
+            key,
+            Array.isArray(data) ? data.filter((item: any) => 
+              item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
+            ) : []
+          ])
         )
       };
+
+      console.log(`Datos filtrados para ${provincia}:`, {
+        totalNatalidad: provincialData.natalidad?.length || 0,
+        totalActividad: provincialData.actividadParoEmpleo?.length || 0,
+        totalMortalidad: provincialData.mortalidad?.length || 0,
+        totalCenso: provincialData.censo?.length || 0,
+        totalPib: provincialData.pib?.length || 0
+      });
 
       // Generar nombre del archivo
       const fileName = `datos_${provincia.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
@@ -143,7 +169,7 @@ export function registerRoutes(app: Express) {
       
       res.json(provincialData);
     } catch (error) {
-      console.error("Error exporting provincial data:", error);
+      console.error("Error general en la exportación de datos provinciales:", error);
       res.status(500).json({ 
         error: "Error al exportar datos provinciales",
         details: error instanceof Error ? error.message : "Error desconocido"
