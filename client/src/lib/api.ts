@@ -55,7 +55,7 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
     const caceresData = caceresResponse.data.map(item => {
       const nombrePartes = item.Nombre.split(". ");
       const tipo: 'provincia' | 'municipio' = "provincia";
-      const nombreLimpio = "Cáceres";
+      const nombreLimpio = nombrePartes[0]; // Extraer el nombre del municipio
       
       let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
       if (item.Nombre.includes('Hombres')) {
