@@ -15,7 +15,6 @@ import { PIBPage } from "./pages/PIBPage";
 import { ImportExcelPage } from "./pages/ImportExcelPage";
 import { ImportedDataPage } from "./pages/ImportedDataPage";
 
-
 function Router() {
   return (
     <Switch>
@@ -28,7 +27,6 @@ function Router() {
       <Route path="/pib" component={PIBPage} />
       <Route path="/importar" component={ImportExcelPage} />
       <Route path="/importados" component={ImportedDataPage} />
-      
       <Route>404 - Página no encontrada</Route>
     </Switch>
   );
