@@ -61,8 +61,7 @@ export function DataTable({ data, selectedYear }: DataTableProps) {
             <TableHead>Provincia</TableHead>
             <TableHead>Género</TableHead>
             <TableHead>Año</TableHead>
-            <TableHead>Periodo</TableHead>
-            <TableHead>Nombre Periodo</TableHead>
+            <TableHead>Trimestre</TableHead>
             <TableHead className="text-right">Tasa</TableHead>
           </TableRow>
         </TableHeader>
@@ -72,7 +71,6 @@ export function DataTable({ data, selectedYear }: DataTableProps) {
               <TableCell>{d.provincia}</TableCell>
               <TableCell>{d.genero}</TableCell>
               <TableCell>{d.year}</TableCell>
-              <TableCell>{d.periodName}</TableCell>
               <TableCell>{d.shortPeriod}</TableCell>
               <TableCell className="text-right">
                 {d.value.toFixed(2)}%
