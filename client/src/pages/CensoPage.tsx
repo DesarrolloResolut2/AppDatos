@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 
-type ProvinciaType = 'León' | 'Cáceres' | 'Badajoz' | 'Soria' | 'Teruel' | 'Huesca' | 'Lleida' | 'Jaén' | 'todas';
+type ProvinciaType = 'León' | 'Cáceres' | 'Badajoz' | 'Soria' | 'Teruel' | 'Huesca' | 'Lleida' | 'Jaén' | 'Asturias' | 'todas';
 type GeneroType = 'Total' | 'Hombres' | 'Mujeres';
 
 export function CensoPage() {
@@ -91,6 +91,7 @@ export function CensoPage() {
                   <SelectItem value="Huesca">Huesca</SelectItem>
                   <SelectItem value="Lleida">Lleida</SelectItem>
                   <SelectItem value="Jaén">Jaén</SelectItem>
+                  <SelectItem value="Asturias">Asturias</SelectItem>
                 </SelectContent>
               </Select>
             </div>
