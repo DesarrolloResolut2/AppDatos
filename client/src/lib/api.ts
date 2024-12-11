@@ -33,7 +33,7 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
     const generalData = generalResponse.data.map(item => {
       const nombrePartes = item.Nombre.split(". ");
       const nombreLimpio = nombrePartes[0];
-      const tipo = nombrePartes[1] === "Total" ? "provincia" : "municipio";
+      const tipo: 'provincia' | 'municipio' = nombrePartes[1] === "Total" ? "provincia" : "municipio";
       
       let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
       if (item.Nombre.includes('Hombres')) {
@@ -46,14 +46,15 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
         ...item,
         tipo,
         nombreLimpio,
-        genero
+        genero,
+        provincia: 'León' as const
       };
     });
 
     // Process Cáceres data
     const caceresData = caceresResponse.data.map(item => {
       const nombrePartes = item.Nombre.split(". ");
-      const tipo = "provincia";
+      const tipo: 'provincia' | 'municipio' = "provincia";
       const nombreLimpio = "Cáceres";
       
       let genero: 'Total' | 'Hombres' | 'Mujeres' = 'Total';
@@ -67,7 +68,8 @@ export async function fetchCensoData(): Promise<CensoDataItem[]> {
         ...item,
         tipo,
         nombreLimpio,
-        genero
+        genero,
+        provincia: 'Cáceres' as const
       };
     });
 

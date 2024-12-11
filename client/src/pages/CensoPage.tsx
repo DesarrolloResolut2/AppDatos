@@ -16,11 +16,13 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 
+type ProvinciaType = 'León' | 'Cáceres' | 'todas';
+type GeneroType = 'Total' | 'Hombres' | 'Mujeres';
+
 export function CensoPage() {
-  const [selectedTipo, setSelectedTipo] = useState<'provincia' | 'municipio'>('provincia');
+  const [selectedProvincia, setSelectedProvincia] = useState<ProvinciaType>('todas');
   const [selectedYear, setSelectedYear] = useState<number>(2023);
-  const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
-  const [selectedGenero, setSelectedGenero] = useState<string>("Total");
+  const [selectedGenero, setSelectedGenero] = useState<GeneroType>("Total");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["censoData"],
@@ -33,26 +35,14 @@ export function CensoPage() {
         .sort((a, b) => b - a)
     : [];
 
-  // Extract unique provincias
-  const provincias = data
-    ? Array.from(new Set(data
-        .filter(item => item.tipo === 'provincia')
-        .map(item => item.nombreLimpio)))
-        .sort()
-    : [];
-
   const filteredData = data?.filter(item => {
-    // Filtrar por tipo (provincia o municipio)
-    const tipoMatch = item.tipo === selectedTipo;
-    
     // Filtrar por provincia específica o mostrar todas
-    const provinciaMatch = selectedProvincia === "todas" || item.nombreLimpio === selectedProvincia;
+    const provinciaMatch = selectedProvincia === "todas" || item.provincia === selectedProvincia;
     
-    // Filtrar por género, permitiendo ver el total o un género específico
+    // Filtrar por género
     const generoMatch = selectedGenero === "Total" || item.genero === selectedGenero;
     
-    // Todos los filtros deben coincidir
-    return tipoMatch && provinciaMatch && generoMatch;
+    return provinciaMatch && generoMatch;
   });
 
   if (error) {
@@ -73,7 +63,7 @@ export function CensoPage() {
           Volver a inicio
         </Link>
         <h1 className="text-3xl font-bold text-center flex-1">
-          Censo por {selectedTipo === 'provincia' ? 'Provincias' : 'Municipios'}
+          Censo por Provincias
         </h1>
       </div>
 
@@ -82,48 +72,22 @@ export function CensoPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
-                Tipo
+                Provincia
               </label>
               <Select
-                value={selectedTipo}
-                onValueChange={(value: 'provincia' | 'municipio') => {
-                  setSelectedTipo(value);
-                  setSelectedProvincia(""); // Reset provincia when changing tipo
-                }}
+                value={selectedProvincia}
+                onValueChange={(value: ProvinciaType) => setSelectedProvincia(value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar tipo" />
+                  <SelectValue placeholder="Seleccionar provincia" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="provincia">Provincias</SelectItem>
-                  <SelectItem value="municipio">Municipios</SelectItem>
+                  <SelectItem value="todas">Todas las provincias</SelectItem>
+                  <SelectItem value="León">León</SelectItem>
+                  <SelectItem value="Cáceres">Cáceres</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            {selectedTipo === 'provincia' && (
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">
-                  Provincia
-                </label>
-                <Select
-                  value={selectedProvincia}
-                  onValueChange={setSelectedProvincia}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar provincia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todas">Todas</SelectItem>
-                    {provincias.map((provincia) => (
-                      <SelectItem key={provincia} value={provincia}>
-                        {provincia}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
@@ -131,7 +95,7 @@ export function CensoPage() {
               </label>
               <Select
                 value={selectedGenero}
-                onValueChange={setSelectedGenero}
+                onValueChange={(value: GeneroType) => setSelectedGenero(value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar género" />
@@ -149,7 +113,7 @@ export function CensoPage() {
                 Año
               </label>
               <Select
-                value={selectedYear?.toString() || ''}
+                value={selectedYear?.toString()}
                 onValueChange={(year) => setSelectedYear(Number(year))}
               >
                 <SelectTrigger>
