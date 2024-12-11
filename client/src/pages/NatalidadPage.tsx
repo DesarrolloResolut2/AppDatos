@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { NatalidadDataTable } from "../components/NatalidadDataTable";
+import { fetchNatalidadData } from "../lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -15,16 +16,6 @@ import {
 import { Card } from "@/components/ui/card";
 
 export function NatalidadPage() {
-  interface INENatalidadResponse {
-    Nombre: string;
-    Data: Array<{
-      Anyo: number;
-      Valor: number;
-      Secreto: boolean;
-      Nombre: string;
-    }>;
-  }
-
   const [selectedProvincia, setSelectedProvincia] = useState<string>("todas");
 
   const { data, isLoading, error } = useQuery({
@@ -38,7 +29,9 @@ export function NatalidadPage() {
         .sort((a, b) => b - a)
     : [];
 
-  const [selectedYear, setSelectedYear] = useState<number>(years[0] || 2023);
+  const [selectedYear, setSelectedYear] = useState<number>(
+    years.length > 0 ? years[0] : 2023
+  );
 
   if (error) {
     return (
