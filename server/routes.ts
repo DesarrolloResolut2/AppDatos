@@ -106,10 +106,12 @@ export function registerRoutes(app: Express) {
       const provincia = req.params.provincia;
       
       // Obtener datos de diferentes fuentes
-      const [natalidadResponse, ineResponse, mortalidadResponse] = await Promise.all([
+      const [natalidadResponse, ineResponse, mortalidadResponse, censoResponse, pibResponse] = await Promise.all([
         axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1469?nult=4&det=2"),
         axios.get("https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2074?nult=8"),
-        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1234?nult=4")
+        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1234?nult=4"),
+        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3001?nult=4"),
+        axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/3002?nult=4")
       ]);
 
       // Filtrar datos por provincia
@@ -122,6 +124,12 @@ export function registerRoutes(app: Express) {
           item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
         ),
         mortalidad: mortalidadResponse.data.filter((item: any) => 
+          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
+        ),
+        censo: censoResponse.data.filter((item: any) => 
+          item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
+        ),
+        pib: pibResponse.data.filter((item: any) => 
           item.Nombre && item.Nombre.toLowerCase().includes(provincia.toLowerCase())
         )
       };
