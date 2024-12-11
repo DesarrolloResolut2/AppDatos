@@ -1,0 +1,109 @@
+Guía para Introducir la Nueva Provincia (Lleida) en la Categoría "Censo por Provincias"
+A continuación, se explica cómo integrar Lleida en la sección de "Censo por Provincias". Esto permitirá a los usuarios seleccionar Lleida en el menú desplegable, cargar los datos de su API correspondiente y mostrarlos en la tabla existente de la aplicación.
+
+1. Preparación de la Configuración
+Añadir Lleida al Selector de "Tipo":
+
+Encuentra el componente del selector donde aparecen las provincias.
+Agrega una nueva opción para Lleida en el menú desplegable.
+Ejemplo:
+
+Al seleccionar Lleida, la aplicación debe asociar esta opción con su URL API:
+plaintext
+Copiar código
+https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2878?nult=4&det=2
+Actualizar el Mapeo de URLs:
+
+Incluye Lleida en el mapa de provincias y sus respectivas URLs.
+Ejemplo de configuración actualizada:
+
+json
+Copiar código
+{
+  "Cáceres": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2863?nult=4&det=2",
+  "Badajoz": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2859?nult=4&det=2",
+  "Soria": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2896?nult=4&det=2",
+  "Teruel": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2899?nult=4&det=2",
+  "Huesca": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2875?nult=4&det=2",
+  "Lleida": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/2878?nult=4&det=2"
+}
+2. Consumir la API de Lleida
+Llamada a la API:
+
+Configura una función para enviar una solicitud HTTP a la URL asociada con Lleida.
+Utiliza fetch o axios para gestionar las solicitudes y respuestas.
+Gestión de la Respuesta:
+
+La API proporciona datos como:
+Nombre: Descripción del grupo de datos (total habitantes, hombres, mujeres).
+Data: Valores poblacionales por año.
+Procesa esta información para adaptarla al formato de tu aplicación.
+Ejemplo de datos relevantes:
+
+Año 2023:
+Total habitantes: 439,654.
+Hombres: 218,412.
+Mujeres: 221,242.
+3. Integrar los Datos en la Tabla
+Transformación de los Datos:
+
+Procesa los datos de la API de Lleida para ajustarlos al formato que utiliza tu tabla.
+Estructura esperada:
+json
+Copiar código
+[
+  {
+    "Año": "2023",
+    "Total habitantes": "439,654",
+    "Hombres": "218,412",
+    "Mujeres": "221,242"
+  },
+  {
+    "Año": "2022",
+    "Total habitantes": "440,100",
+    "Hombres": "218,500",
+    "Mujeres": "221,600"
+  }
+]
+Actualizar el Estado de los Datos:
+
+Usa un estado (useState) en React para almacenar y actualizar los datos cargados desde la API.
+Cambia el estado dinámicamente al seleccionar Lleida.
+Ejemplo de lógica:
+
+javascript
+Copiar código
+const [datosTabla, setDatosTabla] = useState([]);
+
+const cargarDatos = async (provincia) => {
+  const url = urls[provincia];
+  const response = await fetch(url);
+  const data = await response.json();
+  const datosProcesados = procesarDatos(data);
+  setDatosTabla(datosProcesados);
+};
+Renderizar los Datos en la Tabla:
+
+Asegúrate de que el componente de la tabla sea capaz de mostrar los datos procesados correctamente.
+4. Manejo de Errores
+Errores en la API:
+
+Si la API no responde o falla, muestra un mensaje como: "No se pudieron cargar los datos de Lleida. Por favor, inténtelo de nuevo más tarde."
+Datos Faltantes:
+
+Si algunos valores están ausentes o son null, indícalo con un texto como --- o "Dato no disponible".
+5. Validación y Pruebas
+Pruebas Funcionales:
+
+Selecciona Lleida en el selector y verifica que los datos se carguen correctamente en la tabla.
+Asegúrate de que los datos mostrados coincidan con los obtenidos de la API.
+Pruebas de Usabilidad:
+
+Comprueba que el selector permita cambiar entre provincias sin problemas y que los datos se actualicen dinámicamente.
+Pruebas de Compatibilidad:
+
+Verifica el funcionamiento en diferentes navegadores y dispositivos.
+6. Posibles Mejoras Futura
+Visualización de Gráficos:
+
+Representa las tendencias de población de Lleida mediante gráficos interactivos.
