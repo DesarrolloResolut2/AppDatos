@@ -19,6 +19,10 @@ export function DataTable({ data, selectedYear }: DataTableProps) {
     // Extract province from item.Nombre
     const parts = item.Nombre.split(". ");
     const provincia = parts.length > 2 ? parts[2] : "Desconocida";
+    
+    // Extraer el género del nombre
+    const genero = item.Nombre.includes("Mujeres") ? "Mujeres" : 
+                  item.Nombre.includes("Hombres") ? "Hombres" : "Total";
 
     // Process and map data points
     return item.Data
@@ -30,6 +34,7 @@ export function DataTable({ data, selectedYear }: DataTableProps) {
         
         return {
           provincia,
+          genero,
           year,
           quarter,
           periodName: d.Periodo.Nombre_largo || '',
@@ -54,6 +59,7 @@ export function DataTable({ data, selectedYear }: DataTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Provincia</TableHead>
+            <TableHead>Género</TableHead>
             <TableHead>Año</TableHead>
             <TableHead>Periodo</TableHead>
             <TableHead>Nombre Periodo</TableHead>
@@ -62,8 +68,9 @@ export function DataTable({ data, selectedYear }: DataTableProps) {
         </TableHeader>
         <TableBody>
           {allProcessedData.map((d, idx) => (
-            <TableRow key={`${d.provincia}-${d.year}-${d.quarter}-${idx}`}>
+            <TableRow key={`${d.provincia}-${d.genero}-${d.year}-${d.quarter}-${idx}`}>
               <TableCell>{d.provincia}</TableCell>
+              <TableCell>{d.genero}</TableCell>
               <TableCell>{d.year}</TableCell>
               <TableCell>{d.periodName}</TableCell>
               <TableCell>{d.shortPeriod}</TableCell>
