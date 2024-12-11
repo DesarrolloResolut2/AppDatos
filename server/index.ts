@@ -2,8 +2,6 @@ import express, { type Request, type Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic } from "./vite";
 import { createServer } from "http";
-import { WebSocket, WebSocketServer } from 'ws';
-
 function log(message: string) {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -47,34 +45,6 @@ async function startServer() {
 
     // Crear servidor HTTP
     const server = createServer(app);
-
-    // Configuración del servidor WebSocket
-    const wss = new WebSocketServer({ 
-      server,
-      path: '/ws',
-      perMessageDeflate: false
-    });
-
-    // Eventos WebSocket
-    wss.on('connection', (ws: WebSocket) => {
-      log('Cliente WebSocket conectado');
-      
-      ws.on('error', (error) => {
-        console.error('Error de WebSocket:', error);
-      });
-      
-      ws.on('message', (data) => {
-        try {
-          console.log('Mensaje recibido:', data.toString());
-        } catch (error) {
-          console.error('Error al procesar mensaje:', error);
-        }
-      });
-      
-      ws.on('close', () => {
-        log('Cliente WebSocket desconectado');
-      });
-    });
 
     // Manejo global de errores
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
