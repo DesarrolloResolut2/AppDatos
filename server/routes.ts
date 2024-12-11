@@ -85,4 +85,15 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: "Error al obtener datos del INE" });
     }
   });
+
+  // Natalidad Data Route
+  app.get("/api/natalidad-data", async (_req: Request, res: Response) => {
+    try {
+      const response = await axios.get("https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1469?nult=4&det=2");
+      res.json(response.data);
+    } catch (error) {
+      console.error("Error fetching natalidad data:", error);
+      res.status(500).json({ error: "Error al obtener datos de natalidad del INE" });
+    }
+  });
 }
