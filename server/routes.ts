@@ -4,8 +4,6 @@ import axios from "axios";
 import { db } from "../db";
 import { importedData } from "../db/schema";
 
-
-
 export function registerRoutes(app: Express) {
   // Add CORS headers
   app.use((req, res, next) => {
@@ -14,8 +12,6 @@ export function registerRoutes(app: Express) {
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
   });
-
-  
 
   // Excel Import Routes
   app.post("/api/import-excel", async (req: Request, res: Response) => {
@@ -75,8 +71,6 @@ export function registerRoutes(app: Express) {
       });
     }
   });
-
-  
 
   // INE Data Routes
   app.get("/api/ine-data", async (_req: Request, res: Response) => {
