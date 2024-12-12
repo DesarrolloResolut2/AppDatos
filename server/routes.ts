@@ -143,21 +143,16 @@ export function registerRoutes(app: Express) {
       );
 
       // Procesar datos de Excel
-      const datosExcelFiltrados = datosExcelResult.map(excelFile => {
-        // Filtrar los datos del Excel por provincia
-        const datosProvinciales = excelFile.data.filter((row: any) => {
-          // Buscar en todas las columnas si alguna contiene el nombre de la provincia
-          return Object.values(row).some(value => 
-            value && value.toString().toLowerCase().includes(provincia.toLowerCase())
-          );
-        });
-
-        return {
+      const datosExcelFiltrados = datosExcelResult
+        .filter(excelFile => 
+          // Filtrar archivos que contengan el nombre de la provincia en su nombre
+          excelFile.fileName.toLowerCase().includes(provincia.toLowerCase())
+        )
+        .map(excelFile => ({
           fileName: excelFile.fileName,
           sheetName: excelFile.sheetName,
-          data: datosProvinciales
-        };
-      }).filter(excel => excel.data.length > 0); // Solo incluir archivos que tengan datos de la provincia
+          data: excelFile.data // Incluir todos los datos del archivo
+        }));
 
       // Construir objeto de datos provinciales
       const provincialData = {
@@ -188,12 +183,20 @@ export function registerRoutes(app: Express) {
         )
       };
 
+      console.log(`Archivos Excel encontrados para ${provincia}:`, 
+        datosExcelFiltrados.map(excel => ({
+          nombre: excel.fileName,
+          registros: excel.data.length
+        }))
+      );
+
       console.log(`Datos filtrados para ${provincia}:`, {
         totalNatalidad: provincialData.natalidad?.length || 0,
         totalActividad: provincialData.actividadParoEmpleo?.length || 0,
         totalMortalidad: provincialData.mortalidad?.length || 0,
         totalCenso: provincialData.censo?.length || 0,
-        totalPib: provincialData.pib?.length || 0
+        totalPib: provincialData.pib?.length || 0,
+        archivosExcel: datosExcelFiltrados.length
       });
 
       // Generar nombre del archivo
