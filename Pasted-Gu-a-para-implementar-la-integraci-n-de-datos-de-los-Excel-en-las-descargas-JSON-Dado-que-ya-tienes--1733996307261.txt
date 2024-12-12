@@ -1,0 +1,174 @@
+Guía para implementar la integración de datos de los Excel en las descargas JSON
+Dado que ya tienes implementada la subida de archivos Excel y la descarga de datos JSON por provincias, aquí tienes los pasos para extender tu función de exportación JSON para incluir datos de los archivos Excel.
+
+1. Requisitos previos
+Estructura de datos existente:
+
+Tu base de datos ya debe tener una tabla donde almacenes los datos de los Excel, al menos con las columnas:
+provincia
+columna (para el nombre de la columna del Excel).
+valor (para el contenido de la columna).
+Opcionalmente, otras columnas como año, categoría, etc.
+sql
+Copiar código
+CREATE TABLE datos_excel (
+    id SERIAL PRIMARY KEY,
+    provincia TEXT,
+    columna TEXT,
+    valor TEXT,
+    año INTEGER
+);
+Identificador común:
+
+El Excel debe contener una columna que identifique las provincias, alineándose con el campo provincia de tu base de datos del INE.
+Estructura de descarga actual:
+
+Tu función de exportación JSON probablemente consulta la base de datos por provincias. Extendemos esto para incluir los datos almacenados desde los Excel.
+2. Modificaciones al Backend
+Extender la consulta de datos
+Modifica la función de exportación de datos para que también consulte la tabla de datos de Excel.
+
+Ejemplo de código en Node.js:
+
+javascript
+Copiar código
+app.get('/exportar/:provincia', async (req, res) => {
+  const { provincia } = req.params;
+
+  try {
+    // 1. Datos del INE
+    const censo = await client.query('SELECT * FROM censo_provincias WHERE provincia = $1', [provincia]);
+    const tasaActividad = await client.query('SELECT * FROM tasa_actividad WHERE provincia = $1', [provincia]);
+
+    // 2. Datos de los Excel
+    const datosExcel = await client.query('SELECT * FROM datos_excel WHERE provincia = $1', [provincia]);
+
+    // 3. Agrupar datos del Excel por columna para estructurar mejor el JSON
+    const excelPorCategoria = datosExcel.rows.reduce((acc, row) => {
+      if (!acc[row.columna]) acc[row.columna] = [];
+      acc[row.columna].push({ año: row.año, valor: row.valor });
+      return acc;
+    }, {});
+
+    // 4. Combinar los datos
+    const data = {
+      censo: censo.rows,
+      tasa_actividad: tasaActividad.rows,
+      datos_excel: excelPorCategoria,
+    };
+
+    // 5. Enviar el archivo JSON
+    res.header('Content-Type', 'application/json');
+    res.header('Content-Disposition', `attachment; filename="${provincia}.json"`);
+    res.send(JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error('Error al exportar los datos', error);
+    res.status(500).send('Error al exportar los datos');
+  }
+});
+3. Proceso Detallado
+Paso 1: Consultar la tabla de datos de Excel
+La tabla de datos de Excel debe contener un campo provincia para que puedas filtrar por el parámetro enviado en la API.
+Si tienes columnas adicionales en el Excel, guárdalas como pares clave-valor en la tabla datos_excel.
+Paso 2: Estructurar los datos del Excel
+Usa la columna columna como una categoría o grupo para estructurar los datos adicionales en el JSON.
+
+Ejemplo de agrupación: Si tienes los siguientes datos en datos_excel:
+
+provincia	columna	valor	año
+Madrid	población	6780000	2023
+Madrid	densidad	830	2023
+Madrid	nacimientos	32000	2023
+El JSON estructurado quedará así:
+
+json
+Copiar código
+{
+  "datos_excel": {
+    "población": [
+      { "año": 2023, "valor": 6780000 }
+    ],
+    "densidad": [
+      { "año": 2023, "valor": 830 }
+    ],
+    "nacimientos": [
+      { "año": 2023, "valor": 32000 }
+    ]
+  }
+}
+Paso 3: Combinar los datos del INE y los Excel
+Une los datos del INE y del Excel en un único objeto para exportarlos juntos.
+Estructura el JSON para que quede organizado y fácilmente legible.
+Ejemplo del JSON combinado:
+
+json
+Copiar código
+{
+  "censo": [
+    { "año": 2023, "genero": "hombre", "valor": 3450000 },
+    { "año": 2023, "genero": "mujer", "valor": 3330000 }
+  ],
+  "tasa_actividad": [
+    { "año": 2023, "periodo": "T1", "valor": 58.2 },
+    { "año": 2023, "periodo": "T2", "valor": 57.8 }
+  ],
+  "datos_excel": {
+    "población": [
+      { "año": 2023, "valor": 6780000 }
+    ],
+    "densidad": [
+      { "año": 2023, "valor": 830 }
+    ],
+    "nacimientos": [
+      { "año": 2023, "valor": 32000 }
+    ]
+  }
+}
+4. Validaciones y Manejo de Errores
+Validar datos del Excel al exportar:
+
+Asegúrate de que los datos del Excel contengan el campo provincia. Si no es así, excluye esos registros.
+javascript
+Copiar código
+if (!row.provincia) {
+  console.warn('Registro de Excel sin provincia, omitiendo...');
+  continue;
+}
+Control de errores:
+
+Si no hay datos del Excel para una provincia, devuelve un objeto vacío o un mensaje indicativo.
+Maneja el caso en el que la tabla datos_excel esté vacía:
+javascript
+Copiar código
+const datosExcel = await client.query('SELECT * FROM datos_excel WHERE provincia = $1', [provincia]);
+if (datosExcel.rowCount === 0) {
+  console.log(`No hay datos de Excel para la provincia ${provincia}`);
+}
+5. Frontend (Opcional)
+Si deseas mostrar los datos adicionales antes de la descarga en el frontend:
+
+Usa una tabla o un componente dinámico para listar las categorías y sus valores.
+Actualiza el estado con los datos obtenidos desde la API.
+Ejemplo:
+
+javascript
+Copiar código
+const [datos, setDatos] = useState(null);
+
+useEffect(() => {
+  fetch(`/exportar/${provincia}`)
+    .then((res) => res.json())
+    .then((data) => setDatos(data));
+}, [provincia]);
+
+return (
+  <div>
+    {datos && (
+      <div>
+        <h1>Datos de {provincia}</h1>
+        <pre>{JSON.stringify(datos, null, 2)}</pre>
+      </div>
+    )}
+  </div>
+);
+6. Pruebas
