@@ -100,6 +100,10 @@ export function registerRoutes(app: Express) {
       const provincia = req.params.provincia;
       console.log(`Iniciando exportación de datos para la provincia: ${provincia}`);
       
+      // Obtener datos de Excel para la provincia
+      console.log('Obteniendo datos de Excel para la provincia:', provincia);
+      const datosExcelResult = await db.select().from(importedData);
+      
       // Definir URLs y realizar peticiones de manera más controlada
       const endpoints = {
         natalidad: "https://servicios.ine.es/wstempus/jsCache/ES/DATOS_TABLA/1469?nult=4&det=2",
@@ -138,10 +142,28 @@ export function registerRoutes(app: Express) {
         })
       );
 
+      // Procesar datos de Excel
+      const datosExcelFiltrados = datosExcelResult.map(excelFile => {
+        // Filtrar los datos del Excel por provincia
+        const datosProvinciales = excelFile.data.filter((row: any) => {
+          // Buscar en todas las columnas si alguna contiene el nombre de la provincia
+          return Object.values(row).some(value => 
+            value && value.toString().toLowerCase().includes(provincia.toLowerCase())
+          );
+        });
+
+        return {
+          fileName: excelFile.fileName,
+          sheetName: excelFile.sheetName,
+          data: datosProvinciales
+        };
+      }).filter(excel => excel.data.length > 0); // Solo incluir archivos que tengan datos de la provincia
+
       // Construir objeto de datos provinciales
       const provincialData = {
         provincia,
         fecha_exportacion: new Date().toISOString(),
+        datos_excel: datosExcelFiltrados,
         ...Object.fromEntries(
           results.map(([key, data]) => {
             const filteredData = Array.isArray(data) ? data.filter((item: any) => {
